@@ -2,13 +2,14 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>会員登録画面フォーム</title>
+    <title>会員登録フォーム</title>
     <link rel="stylesheet" type="text/css" href="stylesheet.css">
   </head>
 
   <body>
     <div class="signup-form">
-        <h3>会員登録フォーム</h3>
+        <h3>会員情報登録フォーム</h3>
+        
     <form action="sent.php" method="post">
         
         <p>氏名</p>
