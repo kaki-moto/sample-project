@@ -8,9 +8,12 @@
 
   <body>
 
-  <div class="form-title">会員情報確認画面</div>
+    <div class="form-title">会員情報確認画面</div>
+
     <div class="form-content">氏名</div>
+    <p>姓</p>
     <?php echo $_POST['family']; ?>
+    <p>名</p>
     <?php echo $_POST['first']; ?>
 
     <div class="form-content">性別</div>
@@ -24,9 +27,11 @@
     <?php echo 'セキュリティのため非表示'; ?>
 
     <div class="form-content">メールアドレス</div>
-    <?php echo $_POST['mail']; ?>
+    <?php echo $_POST['email']; ?>
 
-    <input type="submit" value="登録完了">
+    <form action="regist_comp.php" method="post">
+      <input type="submit" value="登録完了">
+    </form>
     <button type="button" onclick=history.back()>前に戻る</button>
 
 </body>

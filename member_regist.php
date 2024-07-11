@@ -10,21 +10,21 @@
     <div class="signup-form">
         <h3>会員情報登録フォーム</h3>
         
-    <form action="sent.php" method="post">
+    <form id="form" action="sent.php" method="post">
         
         <p>氏名</p>
         <p>姓</p>
-        <input type="text" name="family">
+        <input type="text" name="family" maxlength="20" required>
         <p>名</p>
-        <input type="text" name="first">
+        <input type="text" name="first" maxlength="20" required>
 
         <p>性別</p>
-        <input type="radio" name="radio" value="men">男性
-        <input type="radio" name="radio" value="women">女性
+        <input type="radio" name="radio" value="男性" required>男性
+        <input type="radio" name="radio" value="女性" required>女性
 
         <p>住所</p>
         <p>都道府県</p>
-        <imput type=“select”>
+        <imput type=“select” required>
             <select name="pref">
                 <option value="" selected>選択してください</option>
                 <option value="北海道">北海道</option>
@@ -76,15 +76,15 @@
                 <option value="沖縄県">沖縄県</option>
             </select>
         <p>それ以降の住所</p>
-        <input type="text" name="adress">
+        <input type="text" name="adress" maxlength="100">
 
         <p>パスワード</p>
-        <input type="password" name="password" maxlength="16" >
+        <input type="password" name="password" pattern="^[a-zA-Z0-9]+$" minlength="8" maxlength="20" required>
         <p>パスワードの確認</p>
-        <input type="password" name="password" maxlength="16" >
+        <input type="password" name="password" pattern="^[a-zA-Z0-9]+$" minlength="8" maxlength="20" required>
 
         <p>メールアドレス</p>
-        <input type="text" name="mail">
+        <input type="text" name="email" maxlength="200" required>
 
         
         <p><input type="submit" value="確認画面へ"></p>
