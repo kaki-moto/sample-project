@@ -1,3 +1,34 @@
+<?php 
+session_start();
+// セッションからフォームデータを取得
+$formData = isset($_SESSION['formData']) ? $_SESSION['formData'] : [];
+
+// セッションデータが存在しない場合
+if(empty($formData)){
+  echo "フォームデータが存在しません。";
+  exit;
+}
+
+// セッションデータを表示
+// $formDataが空でない時に実行
+if (!empty($formData)) {
+  // セッションから取得したフォームデータを安全にHTMLに出力するための処理
+  $family = htmlspecialchars($formData['family'], ENT_QUOTES);
+  $first = htmlspecialchars($formData['first'], ENT_QUOTES);
+  $gender = htmlspecialchars($formData['gender'], ENT_QUOTES);
+  $pref = htmlspecialchars($formData['pref'], ENT_QUOTES);
+  $adress = htmlspecialchars($formData['adress'], ENT_QUOTES);
+  $email = htmlspecialchars($formData['email'], ENT_QUOTES);
+} else {
+  // セッションデータがない場合、エラーメッセージを表示するなどの処理
+  echo "データが見つかりませんでした。";
+  exit();
+}
+
+?>
+
+
+
 <!DOCTYPE html>
 <html>
   <head>
@@ -13,21 +44,15 @@
     <div class="form-content">
       <label>
         氏名
-          <label>
-            姓
-            <?php echo $_POST['family']; ?>
-          </label>
-          <label>
-            名
-            <?php echo $_POST['first']; ?>
-          </label>
+        <?php echo $family; ?>
+        <?php echo $first; ?>
       </label>
     </div>
 
     <div class="form-content">
       <label>
         性別
-        <?php echo $_POST['radio']; ?>
+        <?php echo $gender; ?>
       </label>
     </div>
    
@@ -35,8 +60,8 @@
     <div class="form-content">
       <label>
         住所
-        <?php echo $_POST['pref']; ?>
-        <?php echo $_POST['adress']; ?>
+        <?php echo $pref; ?>
+        <?php echo $adress; ?>
       </label>
     </div>
     
@@ -51,7 +76,7 @@
     <div class="form-content">
       <label>
         メールアドレス
-        <?php echo $_POST['email']; ?>
+        <?php echo $email; ?>
       </label>
     </div>
 
