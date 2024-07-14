@@ -10,22 +10,35 @@
     <div class="signup-form">
         <h3>会員情報登録フォーム</h3>
         
-    <form id="form" action="sent.php" method="post">
+    <form id="form" action="member_regist.php" method="post">
         
-        <p>氏名</p>
-        <p>姓</p>
-        <input type="text" name="family" maxlength="20" required>
-        <p>名</p>
-        <input type="text" name="first" maxlength="20" required>
+        <label>
+          氏名
+          <label>
+            姓
+            <input type="text" name="family" maxlength="20" required>
+            </label>
+          <label>
+            名
+            <input type="text" name="first" maxlength="20" required>
+            </label>
+        </label>
 
-        <p>性別</p>
-        <input type="radio" name="radio" value="男性" required>男性
-        <input type="radio" name="radio" value="女性" required>女性
+        <br>
 
-        <p>住所</p>
-        <p>都道府県</p>
-        <imput type=“select” required>
-            <select name="pref">
+        <label>
+          性別
+          <input type="radio" name="radio" value="男性" required>男性
+          <input type="radio" name="radio" value="女性" required>女性
+        </label>
+
+        <br>
+
+        <label>住所
+          <label>
+            都道府県
+            <imput type=“select” required>
+              <select name="pref">
                 <option value="" selected>選択してください</option>
                 <option value="北海道">北海道</option>
                 <option value="青森県">青森県</option>
@@ -75,17 +88,33 @@
                 <option value="鹿児島県">鹿児島県</option>
                 <option value="沖縄県">沖縄県</option>
             </select>
-        <p>それ以降の住所</p>
-        <input type="text" name="adress" maxlength="100">
+          </label>
+          <label>
+          それ以降の住所
+          <input type="text" name="adress" maxlength="100">
+          </label>
+        </label>
 
-        <p>パスワード</p>
-        <input type="password" name="password" pattern="^[a-zA-Z0-9]+$" minlength="8" maxlength="20" required>
-        <p>パスワードの確認</p>
-        <input type="password" name="password" pattern="^[a-zA-Z0-9]+$" minlength="8" maxlength="20" required>
+        <br>
 
-        <p>メールアドレス</p>
-        <input type="text" name="email" maxlength="200" required>
+        <label>
+          パスワード
+          <input type="password" name="password" pattern="^[a-zA-Z0-9]+$" minlength="8" maxlength="20" required>
+        </label>
 
+        <br>
+
+        <label>
+          パスワードの確認
+          <input type="password" name="password" pattern="^[a-zA-Z0-9]+$" minlength="8" maxlength="20" required>
+        </label>
+
+        <br>
+
+        <label>
+          メールアドレス
+          <input type="text" name="email" maxlength="200" required>
+        </label>
         
         <p><input type="submit" value="確認画面へ"></p>
 
@@ -95,3 +124,5 @@
   </body>
 
 </html>
+
+
