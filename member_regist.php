@@ -54,8 +54,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // 含まれていなければエラーに
     $errors['pref'] = '※無効な都道府県が選択されました。';
   }
-  if (strlen($_POST['adress']) >101) {
-    $errors['adress'] = '※住所は100文字以内で入力してください。';
+  if (strlen($_POST['address']) >101) {
+    $errors['address'] = '※住所は100文字以内で入力してください。';
   }
 
   if (empty($_POST['pass'])) {
@@ -192,9 +192,9 @@ unset($_SESSION['errors']);
           </label>
           <label>
           それ以降の住所
-          <input type="text" name="adress" value="<?php echo htmlspecialchars($formData['adress'] ?? '', ENT_QUOTES); ?>">
-          <?php if (isset($errors['adress'])): ?>
-            <p style="color: red;"><?php echo $errors['adress']; ?></p>
+          <input type="text" name="address" value="<?php echo htmlspecialchars($formData['address'] ?? '', ENT_QUOTES); ?>">
+          <?php if (isset($errors['address'])): ?>
+            <p style="color: red;"><?php echo $errors['address']; ?></p>
           <?php endif; ?>
           </label>
         </label>
