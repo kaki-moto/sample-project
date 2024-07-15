@@ -88,7 +88,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $errors['email'] = '※メールアドレスは200文字以内で入力してください。';
   } elseif (!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
     $errors['email'] = '※有効なメールアドレスを入力してください。';
-  }
+  } else {
+    // メールアドレスの重複チェック
+    $dsn = 'mysql:host=localhost;dbname=sampledb;charset=utf8mb4';
+    $username = 'root';
+    $passwordDb = 'K4aCuFEh';
+
+    try {
+        $pdo = new PDO($dsn, $username, $passwordDb);
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM members WHERE email = :email");
+        $stmt->bindParam(':email', $_POST['email']);
+        $stmt->execute();
+        $emailCount = $stmt->fetchColumn();
+
+        if ($emailCount > 0) {
+            $errors['email'] = '※既に登録されているメールアドレスです。';
+        }
+    } catch (PDOException $e) {
+        $errors['database'] = 'データベースエラー: ' . $e->getMessage();
+    }
+}
 
   // エラー（$errors）がなかったら
   if (empty($errors)) {
@@ -108,14 +129,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // 条件式 ? 真の場合の値 : 偽の場合の値
 // isset()で、$_SESSION['formData']と$_SESSION['errors']の存在をチェック
 // 存在する場合はその値を代入、存在しない場合は空の配列[]を変数に代入。
-$formData = isset($_SESSION['formData']) ? $_SESSION['formData'] : [];
-$errors = isset($_SESSION['errors']) ? $_SESSION['errors'] : [];
+$formData = $_SESSION['formData'] ?? [];
+$errors = $_SESSION['errors'] ?? [];
 
 // セッションのクリア、エラーを格納していた変数を削除、エラーメッセージをセッションから削除
 unset($_SESSION['errors']);
+unset($_SESSION['formData']);
 
 ?>
-
 
 <!DOCTYPE html>
 <html>
@@ -136,7 +157,7 @@ unset($_SESSION['errors']);
     <div class="signup-form">
         <h3>会員情報登録フォーム</h3>
     <!-- "member_regist.php"でバリデーション? -->
-    <form id="form" action="member_regist.php" method="post">
+    <form id="form" action="member_regist.php" method="post"　>
         
         <label>
           氏名
