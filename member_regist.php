@@ -157,7 +157,7 @@ unset($_SESSION['formData']);
     <div class="signup-form">
         <h3>会員情報登録フォーム</h3>
     <!-- "member_regist.php"でバリデーション? -->
-    <form id="form" action="member_regist.php" method="post"　>
+    <form id="form" action="member_regist.php" method="post">
         
         <label>
           氏名
@@ -251,7 +251,9 @@ unset($_SESSION['formData']);
         </label>
         
         <p><input type="submit" value="確認画面へ"></p>
-
+    </form>
+    <form action="top.php" method="get">
+      <input type="submit" value="トップに戻る">
     </form>
     </div>
 

@@ -82,9 +82,19 @@ try {
 
   <body>
 
-  <div class="form-title">会員登録完了</div>
-  <div class="form-content">
-    <?php echo $message; ?>
+  <div class="form-title">
+    <h3>会員登録完了<h3>
+      
+      <div class="form-content">
+        <?php echo $message; ?>
+      </div>
+
+      <div class="form-content">
+        <!--トップに戻るボタン-->
+        <form action="top.php" method="get">
+          <input type="submit" value="トップに戻る">
+        </form>
+      </div>
   </div>
 
 </body>

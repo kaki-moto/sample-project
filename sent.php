@@ -52,73 +52,74 @@ if (!empty($formData)) {
 
   <body>
 
-    <div class="form-title">会員情報確認画面</div>
+    <div class="form-title">
+      <h3>会員情報確認画面</h3>
 
-    <div class="form-content">
-      <label>
-        氏名
-        <?php echo $family; ?>
-        <?php echo $first; ?>
-      </label>
-    </div>
+      <div class="form-content">
+        <label>
+          氏名
+          <?php echo $family; ?>
+          <?php echo $first; ?>
+        </label>
+      </div>
 
-    <div class="form-content">
-      <label>
-        性別
-        <?php 
-        // フォームデータから性別を整数に変換、整数値として挿入する
-        if ($formData['gender'] === '男性') {
-          $gender = 1;
-        } elseif ($formData['gender'] === '女性') {
-          $gender = 2;
-        } else {
-          $gender = 0; // その他の場合など
-        }
-        ?>
-        <?php 
-        // 性別の整数値を文字列に変換して表示
-        if ($gender === 1) {
-          echo '男性';
-        } elseif ($gender === 2) {
-            echo '女性';
-        } else {
-            echo 'その他'; // もし他の性別があればその処理も追加
-        }
-        ?>
-      </label>
-    </div>
+      <div class="form-content">
+        <label>
+          性別
+          <?php 
+          // フォームデータから性別を整数に変換、整数値として挿入する
+          if ($formData['gender'] === '男性') {
+            $gender = 1;
+          } elseif ($formData['gender'] === '女性') {
+            $gender = 2;
+          } else {
+            $gender = 0; // その他の場合など
+          }
+          ?>
+          <?php 
+          // 性別の整数値を文字列に変換して表示
+          if ($gender === 1) {
+            echo '男性';
+          } elseif ($gender === 2) {
+              echo '女性';
+          } else {
+              echo 'その他'; // もし他の性別があればその処理も追加
+          }
+          ?>
+        </label>
+      </div>
    
 
-    <div class="form-content">
-      <label>
-        住所
-        <?php echo $pref; ?>
-        <?php echo $address; ?>
-      </label>
-    </div>
+      <div class="form-content">
+        <label>
+          住所
+          <?php echo $pref; ?>
+          <?php echo $address; ?>
+        </label>
+      </div>
     
 
-    <div class="form-content">
-      <label>
-        パスワード
-        <?php echo 'セキュリティのため非表示'; ?>
-      </label>
-    </div>
+      <div class="form-content">
+        <label>
+          パスワード
+          <?php echo 'セキュリティのため非表示'; ?>
+        </label>
+      </div>
 
-    <div class="form-content">
-      <label>
-        メールアドレス
-        <?php echo $email; ?>
-      </label>
-    </div>
+      <div class="form-content">
+        <label>
+          メールアドレス
+          <?php echo $email; ?>
+        </label>
+      </div>
     
-    <!--二重送信を防ぐためonsubmit="disableButton()とid="submitButton"を-->
-    <form action="regist_comp.php" method="post" onsubmit="disableButton()">
-    <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
-      <input type="submit" id="submitButton" value="登録完了">
-    </form>
-    <button type="button" onclick=history.back()>前に戻る</button>
-
+      <!--二重送信を防ぐためonsubmit="disableButton()とid="submitButton"を-->
+      <form action="regist_comp.php" method="post" onsubmit="disableButton()">
+      <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
+        <input type="submit" id="submitButton" value="登録完了">
+      </form>
+        <button type="button" onclick=history.back()>前に戻る</button>
+    </div>
 </body>
 
 </html>
