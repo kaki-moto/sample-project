@@ -84,51 +84,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   if (empty($_POST['email'])) {
     $errors['email'] = '※メールアドレスを入力してください。';
-} else {
-    // メールアドレスの形式チェック
-    $email_pattern = '/^[a-zA-Z0-9.!#$%&\'*+\/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/';
-    if (!preg_match($email_pattern, $_POST['email'])) {
-        $errors['email'] = '※有効なメールアドレス形式で入力してください。';
-    } elseif (mb_strlen($_POST['email'], 'UTF-8') > 200) { // <- elseif をここに移動
+  } else {
+    // メールアドレスの長さチェックを最初に行う
+    if (mb_strlen($_POST['email'], 'UTF-8') > 200) {
         $errors['email'] = '※メールアドレスは200文字以内で入力してください。';
     } else {
-    // DBに接続
-    // メールアドレスの重複チェック
-    $dsn = 'mysql:host=localhost;dbname=sampledb;charset=utf8mb4';
-    $username = 'root';
-    $passwordDb = 'K4aCuFEh';
-    // DBに接続できたかできてないかわかるようにするためtry…catch文
-    try {
-        $pdo = new PDO($dsn, $username, $passwordDb);
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        // メールアドレスの形式チェック
+        $email_pattern = '/^[a-zA-Z0-9.!#$%&\'*+\/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/';
+        if (!preg_match($email_pattern, $_POST['email'])) {
+            $errors['email'] = '※有効なメールアドレス形式で入力してください。';
+        } else {
+            // DBに接続
+            // メールアドレスの重複チェック
+            $dsn = 'mysql:host=localhost;dbname=sampledb;charset=utf8mb4';
+            $username = 'root';
+            $passwordDb = 'K4aCuFEh';
+            // DBに接続できたかできてないかわかるようにするためtry…catch文
+            try {
+                $pdo = new PDO($dsn, $username, $passwordDb);
+                $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        $stmt = $pdo->prepare("SELECT COUNT(*) FROM members WHERE email = :email");
-        $stmt->bindParam(':email', $_POST['email']);
-        $stmt->execute();
-        $emailCount = $stmt->fetchColumn();
+                $stmt = $pdo->prepare("SELECT COUNT(*) FROM members WHERE email = :email");
+                $stmt->bindParam(':email', $_POST['email']);
+                $stmt->execute();
+                $emailCount = $stmt->fetchColumn();
 
-        if ($emailCount > 0) {
-            $errors['email'] = '※既に登録されているメールアドレスです。';
+                if ($emailCount > 0) {
+                    $errors['email'] = '※既に登録されているメールアドレスです。';
+                }
+            } catch (PDOException $e) {
+                $errors['database'] = 'データベースエラー: ' . $e->getMessage();
+            }
         }
-    } catch (PDOException $e) {
-        $errors['database'] = 'データベースエラー: ' . $e->getMessage();
     }
-  }
-}
 
-  // エラー（$errors）がなかったら
-  if (empty($errors)) {
-      // sent.phpに遷移
-      header('Location: sent.php');
-      exit();
-  // エラー（$errors）があったら
-  } else {
-      // $errorsを$_SESSION['errors']に格納
-      $_SESSION['errors'] = $errors;
-      // 修正のため再びmember_regist.phpへ
-      header('Location: member_regist.php');
-      exit();
-  }
+    // エラー（$errors）がなかったら
+    if (empty($errors)) {
+        // sent.phpに遷移
+        header('Location: sent.php');
+        exit();
+    // エラー（$errors）があったら
+    } else {
+        // $errorsを$_SESSION['errors']に格納
+        $_SESSION['errors'] = $errors;
+        // 修正のため再びmember_regist.phpへ
+        header('Location: member_regist.php');
+        exit();
+    }
+}
 }
 
 // 条件式 ? 真の場合の値 : 偽の場合の値
@@ -217,11 +220,11 @@ unset($_SESSION['formData']);
             <?php endif; ?>
           </label>
           <label>
-          それ以降の住所
-          <input type="text" name="address" value="<?php echo htmlspecialchars($formData['address'] ?? '', ENT_QUOTES); ?>">
-          <?php if (isset($errors['address'])): ?>
-            <p style="color: red;"><?php echo $errors['address']; ?></p>
-          <?php endif; ?>
+            それ以降の住所
+            <input type="text" name="address" value="<?php echo htmlspecialchars($formData['address'] ?? '', ENT_QUOTES); ?>">
+            <?php if (isset($errors['address'])): ?>
+              <p style="color: red;"><?php echo $errors['address']; ?></p>
+            <?php endif; ?>
           </label>
         </label>
 
