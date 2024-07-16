@@ -26,14 +26,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   // empty()は変数が空であるかどうかを確認するための関数。変数が未定義の場合には警告が出る。
   if (empty($_POST['family'])) {
     $errors['family'] = '※姓を入力してください。';
-  // strlen()は文字列の長さを取得する関数
-  } elseif (strlen($_POST['family']) > 20) {
+  // strlen()は文字列の長さを取得する関数、マルチバイト文字を正しく数えるためmb_strlen()に変更
+  } elseif (mb_strlen($_POST['family']) > 20) {
     $errors['family'] = '※姓は20文字以内で入力してください。';
   }
 
   if (empty($_POST['first'])) {
     $errors['first'] = '※名を入力してください。';
-  } elseif (strlen($_POST['first']) > 20) {
+  } elseif (mb_strlen($_POST['first']) > 20) {
     $errors['first'] = '※名は20文字以内で入力してください。';
   }
 
@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // 含まれていなければエラーに
     $errors['pref'] = '※無効な都道府県が選択されました。';
   }
-  if (strlen($_POST['address']) >101) {
+  if (strlen($_POST['address']) >100) {
     $errors['address'] = '※住所は100文字以内で入力してください。';
   }
 
@@ -84,16 +84,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   if (empty($_POST['email'])) {
     $errors['email'] = '※メールアドレスを入力してください。';
-  } elseif (strlen($_POST['email']) >201) {
-    $errors['email'] = '※メールアドレスは200文字以内で入力してください。';
-  } elseif (!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
-    $errors['email'] = '※有効なメールアドレスを入力してください。';
-  } else {
+} else {
+    // メールアドレスの形式チェック
+    $email_pattern = '/^[a-zA-Z0-9.!#$%&\'*+\/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/';
+    if (!preg_match($email_pattern, $_POST['email'])) {
+        $errors['email'] = '※有効なメールアドレス形式で入力してください。';
+    } elseif (mb_strlen($_POST['email'], 'UTF-8') > 200) { // <- elseif をここに移動
+        $errors['email'] = '※メールアドレスは200文字以内で入力してください。';
+    } else {
+    // DBに接続
     // メールアドレスの重複チェック
     $dsn = 'mysql:host=localhost;dbname=sampledb;charset=utf8mb4';
     $username = 'root';
     $passwordDb = 'K4aCuFEh';
-
+    // DBに接続できたかできてないかわかるようにするためtry…catch文
     try {
         $pdo = new PDO($dsn, $username, $passwordDb);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -109,6 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } catch (PDOException $e) {
         $errors['database'] = 'データベースエラー: ' . $e->getMessage();
     }
+  }
 }
 
   // エラー（$errors）がなかったら
