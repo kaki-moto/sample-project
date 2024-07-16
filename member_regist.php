@@ -84,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   if (empty($_POST['email'])) {
     $errors['email'] = '※メールアドレスを入力してください。';
-  } else {
+    } else {
     // メールアドレスの長さチェックを最初に行う
     if (mb_strlen($_POST['email'], 'UTF-8') > 200) {
         $errors['email'] = '※メールアドレスは200文字以内で入力してください。';
@@ -117,21 +117,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
     }
+  }
 
-    // エラー（$errors）がなかったら
-    if (empty($errors)) {
-        // sent.phpに遷移
-        header('Location: sent.php');
-        exit();
-    // エラー（$errors）があったら
-    } else {
-        // $errorsを$_SESSION['errors']に格納
-        $_SESSION['errors'] = $errors;
-        // 修正のため再びmember_regist.phpへ
-        header('Location: member_regist.php');
-        exit();
-    }
-}
+  // エラー（$errors）がなかったら
+  if (empty($errors)) {
+    // sent.phpに遷移
+    header('Location: sent.php');
+    exit();
+// エラー（$errors）があったら
+  } else {
+      // $errorsを$_SESSION['errors']に格納
+      $_SESSION['errors'] = $errors;
+      // 修正のため再びmember_regist.phpへ
+      header('Location: member_regist.php');
+      exit();
+  }
+
 }
 
 // 条件式 ? 真の場合の値 : 偽の場合の値
