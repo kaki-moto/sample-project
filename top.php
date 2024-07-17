@@ -9,7 +9,7 @@
         <!-- クリックで会員登録フォームへ -->
         <a href="member_regist.php">新規会員登録</a>
         <!-- クリックでログインフォームへ -->
-        <a href="login.php">ログイン</a></li>
+        <a href="login.php">ログイン</a>
     </header>
     <main>
 

@@ -44,8 +44,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($stmt->rowCount() == 1) {
                 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-                var_dump($password);
-                var_dump($user['password']);
+                // ログの追加
+                error_log('Password: ' . $password);
+                error_log('User Password from DB: ' . $user['password']);
 
                 // パスワードの照合
                 if (password_verify($password, $user['password'])) {
@@ -59,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             // メールアドレスがDB内に登録されていないものだった
             } else {
-                $errors['login'] = 'メールアドレスが間違っています。';//一時的に
+                $errors['login'] = 'メールアドレスが間違っています。'; //一時的に
             }
                 
         // データベース接続に失敗したら
@@ -86,6 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <title>ログインフォーム</title>
 </head>
 <body>
+
     <div class="login-form">
         <h3>ログイン</h3>
 

@@ -47,8 +47,11 @@ try {
     $email = $formData['email'];
     // password_hash()を利用してパスワードをハッシュ化し変数$passwordHashに代入、この$passwordHashがデータベースに保存される。 
     $passwordHash = password_hash($formData['password'], PASSWORD_DEFAULT); // パスワードのハッシュ化
+    
+    // ハッシュ化されたパスワードをログに出力
+    error_log('Password Hash: ' . $passwordHash);
 
-    // デバッグ出力
+
     // echo 'Password Hash: ' . $passwordHash;
   
     // ユーザー情報をデータベースに会員情報を挿入する SQLクエリ
