@@ -44,6 +44,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($stmt->rowCount() == 1) {
                 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
+                var_dump($password);
+                var_dump($user['password']);
+
                 // パスワードの照合
                 if (password_verify($password, $user['password'])) {
                     // ログイン成功
