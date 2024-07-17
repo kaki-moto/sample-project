@@ -45,9 +45,13 @@ try {
     $pref = $formData['pref'];
     $address = $formData['address'];
     $email = $formData['email'];
+    // password_hash()を利用してパスワードをハッシュ化し変数$passwordHashに代入、この$passwordHashがデータベースに保存される。 
     $passwordHash = password_hash($formData['password'], PASSWORD_DEFAULT); // パスワードのハッシュ化
+
+    // デバッグ出力
+    // echo 'Password Hash: ' . $passwordHash;
   
-    // データベースに会員情報を挿入するSQLクエリ
+    // ユーザー情報をデータベースに会員情報を挿入する SQLクエリ
     $stmt = $pdo->prepare("INSERT INTO members (name_sei, name_mei, gender, pref_name, address, password, email)
                        VALUES (:name_sei, :name_mei, :gender, :pref_name, :address, :password, :email)");
     // バインドパラメータを設定してクエリを実行

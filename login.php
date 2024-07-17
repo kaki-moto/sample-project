@@ -4,29 +4,29 @@ session_start();
 $errors = $_SESSION['errors'] ?? [];
 unset($_SESSION['errors']);
 
-// 追加: フォームデータの取得と解放
+// フォームデータの取得と解放
 $formData = $_SESSION['formData'] ?? [];
 unset($_SESSION['formData']);
 
 // ログインボタンが押されたら
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-     // 変更: セッションではなく変数に保存、？
-     $formData = $_POST;
+    // セッションではなく変数に保存
+    $formData = $_POST;
     // バリデーション
     if (empty($_POST['email'])) {
         $errors['email'] = '※メールアドレス（ID）を入力してください。';
     }
     if (empty($_POST['pass'])) {
         $errors['pass'] = '※パスワードを入力してください。';
-    }
+    } 
 
-    // エラー（$errors）がなかったら
+    // エラー（$errors）がなかったら（なにかしら入力されていたら）
     if (empty($errors)) {
         // データベース接続
         $dsn = 'mysql:host=localhost;dbname=sampledb;charset=utf8mb4';
         $username = 'root';
         $passwordDb = 'K4aCuFEh';
-
+        
         try {
             $pdo = new PDO($dsn, $username, $passwordDb);
             $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -34,14 +34,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // 入力されたメールアドレスとパスワードを取得、['inputのname属性']
             $email = $_POST['email'];
             $password = $_POST['pass'];
+            
+            // データベースでユーザーを検索
+            $stmt = $pdo->prepare("SELECT * FROM members WHERE email = :email");
+            $stmt->bindParam(':email', $email);
+            $stmt->execute();
 
-             // データベースでユーザーを検索
-             $stmt = $pdo->prepare("SELECT * FROM members WHERE email = :email");
-             $stmt->bindParam(':email', $email);
-             $stmt->execute();
-
-             if ($stmt->rowCount() == 1) {
+            // DB内に一致するメールアドレスが1つだけある場合
+            if ($stmt->rowCount() == 1) {
                 $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
                 // パスワードの照合
                 if (password_verify($password, $user['password'])) {
                     // ログイン成功
@@ -49,18 +51,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     header('Location: top.php');
                     exit();
                 } else {
-                    $errors['login'] = 'メールアドレスまたはパスワードが間違っています。';
+                    // パスワードがDB内に登録されていないものだった
+                    $errors['login'] = 'パスワードが間違っています。'; //一時的に
                 }
+            // メールアドレスがDB内に登録されていないものだった
             } else {
-                $errors['login'] = 'メールアドレスまたはパスワードが間違っています。';
+                $errors['login'] = 'メールアドレスが間違っています。';//一時的に
             }
+                
         // データベース接続に失敗したら
         } catch (PDOException $e) {
             $errors['database'] = 'データベースエラー: ' . $e->getMessage();
         }
     }
 
-    // エラーがなかったら
+    // エラー（$errors）があったら（ログインボタン押されたけど何も入力されてなかったら）
     if (!empty($errors)) {
         $_SESSION['errors'] = $errors;
         $_SESSION['formData'] = $formData;
@@ -98,14 +103,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <?php if (isset($errors['pass'])): ?>
                 <p style="color: red;"><?php echo htmlspecialchars($errors['pass']); ?></p>
                 <?php endif; ?>
+
             </label>
+            <br>
+            <!-- ログインできなかったエラー -->
+            <?php if (isset($errors['login'])): ?>
+            <p style="color: red;"><?php echo htmlspecialchars($errors['login']); ?></p>
+            <?php endif; ?>
+            <!-- データベースと接続できなかった？エラー -->
+            <?php if (isset($errors['database'])): ?>
+            <p style="color: red;"><?php echo htmlspecialchars($errors['database']); ?></p>
+            <?php endif; ?>
 
             <p><input type="submit" value="ログイン"></p>
-
         </form>
 
         <form action="top.php" method="get">
             <input type="submit" value="トップに戻る">
         </form>
+    </div>
 </body>
 </html>
