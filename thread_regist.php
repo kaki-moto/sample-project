@@ -6,10 +6,10 @@
 </head>
 <body>
 
-    <div class="login-form">
+    <div class="thread-create">
         <h3>スレッド作成フォーム</h3>
 
-        <form action="" method="post">
+        <form action="thread_confirm.php" method="post">
 
             <label for="title">
                 スレッドタイトル
