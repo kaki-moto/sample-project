@@ -22,9 +22,6 @@ if(isset($_SESSION['user_id'])){
     // 未ログインの場合
     $loggedIn = false;
 }
-
-
-
 ?>
 
 <!DOCTYPE html>
