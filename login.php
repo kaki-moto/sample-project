@@ -45,14 +45,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
                 // ログの追加
-                error_log('Password: ' . $password);
-                error_log('User Password from DB: ' . $user['password']);
+                // error_log('Password: ' . $password);
+                // error_log('User Password from DB: ' . $user['password']);
 
                 // テスト用のパスワード
-                $password = 'test1234';
-                
+                // $password = 'test1234';
                 // パスワードをハッシュ化
-                $user['password'] = password_hash($password, PASSWORD_DEFAULT);
+                // $user['password'] = password_hash($password, PASSWORD_DEFAULT);
+            
+                // $user['password'] =  '$2y$10$nh7juCfOWMQp0Eg.UxsdwunFUwhLOnOTh7j24KXg37n5rsnKT0IJm';
+                
 
                 // パスワードの照合
                 if (password_verify($password, $user['password'])) {

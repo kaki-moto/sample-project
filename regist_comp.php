@@ -46,11 +46,12 @@ try {
     $address = $formData['address'];
     $email = $formData['email'];
     // password_hash()を利用してパスワードをハッシュ化し変数$passwordHashに代入、この$passwordHashがデータベースに保存される。 
-    $passwordHash = password_hash($formData['password'], PASSWORD_DEFAULT); // パスワードのハッシュ化
+    $passwordHash = password_hash($formData['pass'], PASSWORD_DEFAULT); // パスワードのハッシュ化
     
     // ハッシュ化されたパスワードをログに出力
-    error_log('Password Hash: ' . $passwordHash);
+    //error_log('Password Hash: ' . $passwordHash);
 
+    //error_log('Password Hash: ' . $passwordHash);
 
     // echo 'Password Hash: ' . $passwordHash;
   
@@ -88,6 +89,7 @@ try {
   </head>
 
   <body>
+
 
   <div class="form-title">
     <h3>会員登録完了<h3>
