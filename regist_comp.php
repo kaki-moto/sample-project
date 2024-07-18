@@ -55,7 +55,7 @@ try {
 
     // echo 'Password Hash: ' . $passwordHash;
   
-    // ユーザー情報をデータベースに会員情報を挿入する SQLクエリ
+    // ユーザーの会員情報をデータベースに挿入する SQLクエリ
     $stmt = $pdo->prepare("INSERT INTO members (name_sei, name_mei, gender, pref_name, address, password, email)
                        VALUES (:name_sei, :name_mei, :gender, :pref_name, :address, :password, :email)");
     // バインドパラメータを設定してクエリを実行

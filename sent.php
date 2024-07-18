@@ -115,7 +115,7 @@ if (!empty($formData)) {
     
       <!--二重送信を防ぐためonsubmit="disableButton()とid="submitButton"を-->
       <form action="regist_comp.php" method="post" onsubmit="disableButton()">
-      <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
+        <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
         <input type="submit" id="submitButton" value="登録完了">
       </form>
         <button type="button" onclick=history.back()>前に戻る</button>

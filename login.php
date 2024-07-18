@@ -65,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $user = $stmt->fetch();
                     // ログインしたユーザーの、DBから取得した情報（idと姓・名）をセッションに保存
                     $_SESSION['user_id'] = $user['id'];
-                    $_SESSION['user_name'] = $user['name_sei'].''.$user{'name_mei'};
+                    $_SESSION['user_name'] = $user['name_sei'].''.$user['name_mei'];
                     header('Location: top.php');
                     exit();
                 } else {
