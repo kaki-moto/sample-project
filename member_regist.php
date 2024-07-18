@@ -17,7 +17,7 @@ $prefectures = [
 // フォームがPOSTメソッドで送信されたらブロック内のコード実行
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-  // フォームから送信されたデータ（$POST）をセッション変数$SESSION['formData']に一時保存。
+  // フォームから送信されたデータ（$POST）全てをセッション変数$SESSION['formData']に一時保存。
   // セッション変数$SESSIONの'formData'というキーに格納。
   // フォームデータを次ページsent.phpで使用する為に一時保存
   $_SESSION['formData'] = $_POST;

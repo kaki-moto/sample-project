@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $email = $_POST['email'];
             $password = $_POST['pass'];
             
-            // データベースでユーザーを検索
+            // データベースでユーザー（メールアドレス）を検索
             $stmt = $pdo->prepare("SELECT * FROM members WHERE email = :email");
             $stmt->bindParam(':email', $email);
             $stmt->execute();
@@ -59,7 +59,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // パスワードの照合
                 if (password_verify($password, $user['password'])) {
                     // ログイン成功
+                    // DBからユーザー情報を取得
+                    $stmt = $pdo->prepare("SELECT id, name_sei, name_mei FROM members WHERE email = :email");
+                    $stmt->execute([':email' => $email]);
+                    $user = $stmt->fetch();
+                    // ログインしたユーザーの、DBから取得した情報（idと姓・名）をセッションに保存
                     $_SESSION['user_id'] = $user['id'];
+                    $_SESSION['user_name'] = $user['name_sei'].''.$user{'name_mei'};
                     header('Location: top.php');
                     exit();
                 } else {
