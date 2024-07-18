@@ -41,7 +41,7 @@ if(isset($_SESSION['user_id'])){
         <!-- ログイン状態 -->
             <?php if($loggedIn): ?>
                 <p>ようこそ <?php echo htmlspecialchars($userName); ?> 様</p>
-                <!-- クリックでthread_regist.phpへ -->
+                <a href="thread.php">スレッド一覧</a>
                 <a href="thread_regist.php">新規スレッド作成</a>
                 <!-- クリックでログアウト状態のtop.phpへ -->
                 <!-- 単にtop.phpに遷移するだけでなく、ログアウト処理を呼び出すこと -->
@@ -49,9 +49,8 @@ if(isset($_SESSION['user_id'])){
 
             <!-- ログアウト状態 -->
             <?php else: ?>
-                <!-- クリックで会員登録フォームへ -->
+                <a href="thread.php">スレッド一覧</a>
                 <a href="member_regist.php">新規会員登録</a>
-                <!-- クリックでログインフォームへ -->
                 <a href="login.php">ログイン</a>
             <?php endif; ?>
 

@@ -91,6 +91,10 @@ unset($_SESSION['formData']);
             <p><input type="submit" value="確認画面へ"></p>
         </form>
 
+        <form action="thread.php" method="get">
+            <input type="submit" value="一覧にもどる">
+        </form>
+
         <form action="top.php" method="get">
             <input type="submit" value="トップに戻る">
         </form>
