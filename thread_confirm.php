@@ -24,13 +24,12 @@ if (empty($_SESSION['csrf_token'])) {
 $csrf_token = $_SESSION['csrf_token'];
 
 // セッションデータを表示
-// $formDataが空でない時に実行
 if (!empty($formData)) {
     // セッションから取得したフォームデータを安全にHTMLに出力するための処理
     $title = htmlspecialchars($formData['title'], ENT_QUOTES);
-    $comment = htmlspecialchars($formData['comment'], ENT_QUOTES);
+    $comment = nl2br(htmlspecialchars($formData['comment'], ENT_QUOTES));
   } else {
-    // セッションデータがない場合、エラーメッセージを表示するなどの処理
+    // セッションデータが空の場合、エラーメッセージを表示するなどの処理
     echo "データが見つかりませんでした。";
     exit();
   }
@@ -63,13 +62,13 @@ if (!empty($formData)) {
                 スレッドタイトル
                 <!-- リロード後も表示されるように -->
                 <!-- セッションからスレッドタイトル取得・表示 -->
-                <p><?php echo htmlspecialchars($formData['title'] ?? '', ENT_QUOTES); ?></p>
+                <p><?php echo $title; ?></p>
             </label>
             <br>
             <label for="coment">
                 コメント
                 <!-- セッションからコメント取得・表示 -->
-                <p><?php echo htmlspecialchars($formData['comment'] ?? '', ENT_QUOTES); ?></p>
+                <p><?php echo $comment; ?></p>
             </label>
             <br>
 
