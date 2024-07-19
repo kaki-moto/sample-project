@@ -23,7 +23,7 @@ try {
     }
     $thread_id = intval($_GET['id']);
 
-    // スレッド情報を取得
+    // 指定されたスレッドIDに対応するスレッド情報を取得。そのスレッドを作成したユーザーの名前を取得。
     $stmt = $pdo->prepare("SELECT threads.*, CONCAT(members.name_sei, ' ', members.name_mei) AS member_name FROM threads JOIN members ON threads.member_id = members.id WHERE threads.id = :id");
     $stmt->bindParam(':id', $thread_id, PDO::PARAM_INT);
     $stmt->execute();
@@ -85,10 +85,28 @@ try {
             <p style="color: red;"><?php echo htmlspecialchars($error_message); ?></p>
         <?php else: ?>
             <h3><?php echo htmlspecialchars($thread['title']); ?></h3>
-            <p><?php echo $reaction_count; ?>コメント</p>
-            <p>作成日時：<?php echo htmlspecialchars($thread['created_at']); ?></p>
-            <p>投稿者：<?php echo htmlspecialchars($thread['member_name']); ?></p>
+            <br>
+            <?php echo $reaction_count; ?>コメント
+            <?php echo htmlspecialchars($thread['created_at']); ?>
+            <br>
+            投稿者：<?php echo htmlspecialchars($thread['member_name']); ?>
+            <?php echo htmlspecialchars($thread['created_at']); ?>
             <p><?php echo htmlspecialchars($thread['content']); ?></p>
+            <!-- コメントID、氏名、投稿日時、コメントを表示 -->
+            <?php if (!empty($comments)): ?>
+                <ul>
+                    <?php foreach ($comments as $comment): ?>
+                        <li>
+                            <p>ID: <?php echo htmlspecialchars($comment['id']); ?></p>
+                            氏名: <?php echo htmlspecialchars($comment['member_name']); ?>
+                            投稿日時: <?php echo htmlspecialchars($comment['created_at']); ?>
+                            <p>コメント: <?php echo nl2br(htmlspecialchars($comment['comment'])); ?></p>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php else: ?>
+                <p>コメントがありません。</p>
+            <?php endif; ?>
 
             <?php if($loggedIn): ?>
                 <form action="thread_detail.php?id=<?php echo $thread_id; ?>" method="POST">
