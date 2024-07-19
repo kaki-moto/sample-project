@@ -47,6 +47,9 @@ try {
     $email = $formData['email'];
     // password_hash()を利用してパスワードをハッシュ化し変数$passwordHashに代入、この$passwordHashがデータベースに保存される。 
     $passwordHash = password_hash($formData['pass'], PASSWORD_DEFAULT); // パスワードのハッシュ化
+    // 現在の日時を取得した上で$createdAtと$updatedAtの変数を設定
+    $createdAt = date( 'Y-m-d H:i:s');
+    $updatedAt = date( 'Y-m-d H:i:s');
     
     // ハッシュ化されたパスワードをログに出力
     //error_log('Password Hash: ' . $passwordHash);
@@ -56,8 +59,8 @@ try {
     // echo 'Password Hash: ' . $passwordHash;
   
     // ユーザーの会員情報をデータベースに挿入する SQLクエリ
-    $stmt = $pdo->prepare("INSERT INTO members (name_sei, name_mei, gender, pref_name, address, password, email)
-                       VALUES (:name_sei, :name_mei, :gender, :pref_name, :address, :password, :email)");
+    $stmt = $pdo->prepare("INSERT INTO members (name_sei, name_mei, gender, pref_name, address, password, email, created_at, updated_at)
+                       VALUES (:name_sei, :name_mei, :gender, :pref_name, :address, :password, :email, :created_at, :updated_at)");
     // バインドパラメータを設定してクエリを実行
     $stmt->bindParam(':name_sei', $family);
     $stmt->bindParam(':name_mei', $first);
@@ -66,6 +69,8 @@ try {
     $stmt->bindParam(':address', $address);
     $stmt->bindParam(':password', $passwordHash);
     $stmt->bindParam(':email', $email);
+    $stmt->bindParam(':created_at', $createdAt);
+    $stmt->bindParam(':updated_at', $updatedAt);
         
     // クエリを実行して登録完了メッセージを表示
     if ($stmt->execute()) {

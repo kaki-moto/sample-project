@@ -3,7 +3,7 @@ session_start();
 date_default_timezone_set('Asia/Tokyo'); //日本時間に
 
 if(isset($_SESSION['user_id'])){
-    // ログイン済み（成功してtop.phpに遷移）の場合
+    // ログイン済み（成功してthread.php）の場合
     $loggedIn = true;
 } else {
     // 未ログインの場合
@@ -28,26 +28,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo "フォームデータが存在しません。";
         exit;
     }
-
+    // スレッド一覧を表示する前に、thread_confirmからPOSTメソッド送信されてきたスレタイやコメントをDBのthreadsテーブルに挿入。
     try {
         $pdo = new PDO($dsn, $username, $password);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        $id = $_SESSION['user_id']; 
-        $title = $formData['title'];
-        $comment = $formData['comment'];
-        
+        $memberId = $_SESSION['user_id']; //会員ID
+        $title = $formData['title']; // スレタイ
+        $comment = $formData['comment']; // コメント
         $createdAt = date( 'Y-m-d H:i:s');
         $updatedAt = date( 'Y-m-d H:i:s');
-
+        // スレッドID(:id)はAUTO_INCREMENTだから挿入不要
         $stmt = $pdo->prepare("INSERT INTO threads (member_id, title, content, created_at, updated_at) VALUES (:member_id, :title, :content, :created_at, :updated_at)");
-        $stmt->bindParam(':member_id', $id);
+        $stmt->bindParam(':member_id', $memberId); //会員ID
         $stmt->bindParam(':title', $title);
         $stmt->bindParam(':content', $comment);
         $stmt->bindParam(':created_at', $createdAt);
         $stmt->bindParam(':updated_at', $updatedAt);
 
         if ($stmt->execute()) {
+            // DBにスレッド登録成功
             header('Location: thread.php');
             exit();
         } else {

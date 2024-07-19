@@ -55,7 +55,6 @@ if (!empty($formData)) {
 
     <div class="thread_confirm">
         <h3>スレッド作成確認画面</h3>
-
         <form action="thread.php" method="post" onsubmit="disableButton()">
 
             <label for="title">
@@ -73,7 +72,7 @@ if (!empty($formData)) {
             <br>
 
             
-            <!-- クリックするとDBに登録され、top.phpに -->
+            <!-- クリックするとDBに登録され、スレッド一覧に -->
             <!--二重送信を防ぐためonsubmit="disableButton()とid="submitButton"を-->
             <!--すでに生成されているCSRFトークンをフォームに含める-->
             <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
