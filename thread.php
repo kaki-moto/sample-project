@@ -1,19 +1,28 @@
 <?php
 session_start();
+date_default_timezone_set('Asia/Tokyo'); //日本時間に
+
+if(isset($_SESSION['user_id'])){
+    // ログイン済み（成功してtop.phpに遷移）の場合
+    $loggedIn = true;
+} else {
+    // 未ログインの場合
+    $loggedIn = false;
+}
 
 // データベース接続情報
 $dsn = 'mysql:host=localhost;dbname=sampledb;charset=utf8mb4';
 $username = 'root';
 $password = 'K4aCuFEh';
 
+// thread.phpからPOSTメソッドで送信されたものを受け取る。二重送信対策。
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
         echo "不正なリクエストです。";
         exit();
     }
-
     unset($_SESSION['csrf_token']);
-
+    
     $formData = $_SESSION['formData'] ?? [];
     if (empty($formData)) {
         echo "フォームデータが存在しません。";
@@ -24,14 +33,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pdo = new PDO($dsn, $username, $password);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        $id = $_SESSION['user_id'];
+        $id = $_SESSION['user_id']; 
         $title = $formData['title'];
         $comment = $formData['comment'];
+        
+        $createdAt = date( 'Y-m-d H:i:s');
+        $updatedAt = date( 'Y-m-d H:i:s');
 
-        $stmt = $pdo->prepare("INSERT INTO threads (member_id, title, content) VALUES (:member_id, :title, :content)");
+        $stmt = $pdo->prepare("INSERT INTO threads (member_id, title, content, created_at, updated_at) VALUES (:member_id, :title, :content, :created_at, :updated_at)");
         $stmt->bindParam(':member_id', $id);
         $stmt->bindParam(':title', $title);
         $stmt->bindParam(':content', $comment);
+        $stmt->bindParam(':created_at', $createdAt);
+        $stmt->bindParam(':updated_at', $updatedAt);
 
         if ($stmt->execute()) {
             header('Location: thread.php');
@@ -43,23 +57,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo '接続失敗: ' . $e->getMessage();
     }
 } else {
-    // GETリクエストの処理（スレッド一覧表示）
+    // GETリクエストの処理（検索ボックス）
     // GETリクエストがない場合に$searchが未定義になる可能性有。それを防ぐために初期化。
     $search = isset($_GET['search']) ? $_GET['search'] : '';
-
     try {
         $pdo = new PDO($dsn, $username, $password);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
         $search = isset($_GET['search']) ? $_GET['search'] : '';
-
         if ($search) {
             $stmt = $pdo->prepare("SELECT * FROM threads WHERE title LIKE :search OR content LIKE :search ORDER BY created_at DESC");
             $stmt->execute(['search' => "%{$search}%"]);
         } else {
             $stmt = $pdo->query("SELECT * FROM threads ORDER BY created_at DESC");
         }
-
         $threads = $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
         echo '接続失敗: ' . $e->getMessage();
@@ -76,7 +87,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
     <header>
-        <a href="thread_regist.php">新規スレッド作成</a>
+        <!-- ログイン時にのみ新規スレッド作成ボタン -->
+        <?php if($loggedOut): ?>
+            <a href="thread_regist.php">新規スレッド作成</a>
+        <?php endif; ?>
     </header>
     <main>
 
@@ -93,13 +107,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php if (isset($threads)): ?>
                 <ul  style="list-style-type: none;">
                 <?php foreach ($threads as $thread): ?>
+
                     <li>
-                        ID: <?php echo htmlspecialchars($thread['member_id']); ?><!-- 会員ID -->
+                        ID: <?php echo htmlspecialchars($thread['id']); ?><!-- スレッドID！！ -->
                         <a href="thread_detail.php?id=<?php echo htmlspecialchars($thread['id']); ?>">
                             <?php echo htmlspecialchars($thread['title']); ?><!-- スレタイをリンクに -->
                         </a>
                         <?php echo htmlspecialchars($thread['created_at']); ?><!-- 作成日時 -->
                     </li>
+
                 <?php endforeach; ?>
                 </ul>
             <?php else: ?>
