@@ -88,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
     <header>
         <!-- ログイン時にのみ新規スレッド作成ボタン -->
-        <?php if($loggedOut): ?>
+        <?php if($loggedIn): ?>
             <a href="thread_regist.php">新規スレッド作成</a>
         <?php endif; ?>
     </header>
