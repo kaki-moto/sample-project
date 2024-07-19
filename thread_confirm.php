@@ -63,13 +63,13 @@ if (!empty($formData)) {
                 スレッドタイトル
                 <!-- リロード後も表示されるように -->
                 <!-- セッションからスレッドタイトル取得・表示 -->
-                <p><input type="text" name="title" value="<?php echo htmlspecialchars($formData['title'] ?? '', ENT_QUOTES); ?>"></p>
+                <p><?php echo htmlspecialchars($formData['title'] ?? '', ENT_QUOTES); ?></p>
             </label>
             <br>
             <label for="coment">
                 コメント
                 <!-- セッションからコメント取得・表示 -->
-                <p><textarea name="comment"><?php echo htmlspecialchars($formData['comment'] ?? '', ENT_QUOTES); ?></textarea></p>
+                <p><?php echo htmlspecialchars($formData['comment'] ?? '', ENT_QUOTES); ?></p>
             </label>
             <br>
 
