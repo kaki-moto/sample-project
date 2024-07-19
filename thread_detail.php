@@ -1,5 +1,6 @@
 <?php
 session_start();
+date_default_timezone_set('Asia/Tokyo'); //日本時間に
 
 // データベース接続情報
 $dsn = 'mysql:host=localhost;dbname=sampledb;charset=utf8mb4';
@@ -38,7 +39,7 @@ try {
     $stmt->execute();
     $reaction_count = $stmt->fetchColumn();
 
-    // POSTリクエストの処理
+    // POSTリクエスト（コメント(reaction)のバリデーション）の処理
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (empty($_POST['reaction'])) {
             $errors['reaction'] = '※コメントを入力してください。';
@@ -47,12 +48,15 @@ try {
         }
 
         if (empty($errors)) {
-            // コメントをデータベースに保存する処理
-            $stmt = $pdo->prepare("INSERT INTO comments (thread_id, member_id, content, created_at) VALUES (:thread_id, :member_id, :content, NOW())");
+            $now = date('Y-m-d H:i:s');
+            // コメントをデータベースcommentsに保存する処理
+            $stmt = $pdo->prepare("INSERT INTO comments (member_id, thread_id, comment, created_at, updated_at) VALUES (:member_id, :thread_id, :comment, :created_at, :updated_at)");
             $stmt->execute([
-                ':thread_id' => $thread_id,
                 ':member_id' => $_SESSION['user_id'],
-                ':content' => $_POST['reaction']
+                ':thread_id' => $thread_id,
+                ':comment' => $_POST['reaction'],
+                ':created_at' => $now,
+                ':updated_at' => $now
             ]);
 
             // 保存成功後、同じページにリダイレクト
