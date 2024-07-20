@@ -71,6 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $stmt = $pdo->query("SELECT * FROM threads ORDER BY created_at DESC");
         }
+        // ここで全てのスレッド情報が$threadsに格納。$threads['カラム名']で特定のカラムの値を表せる。
         $threads = $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
         echo '接続失敗: ' . $e->getMessage();

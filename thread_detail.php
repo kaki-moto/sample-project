@@ -23,6 +23,11 @@ try {
     }
     $thread_id = intval($_GET['id']);
 
+    // ページ番号を取得
+    $page = isset($_GET['page']) && is_numeric($_GET['page']) ? intval($_GET['page']) : 1;
+    $limit = 5; // 1ページに表示するコメントの数
+    $offset = ($page - 1) * $limit; // DBのどの行からデータを取得するか。$pageが1なら$offsetは0で、$pageが2なら$offsetは5で5行目からデータ取得。
+
     // 指定されたスレッドIDに対応するスレッド情報を取得。そのスレッドを作成したユーザーの名前を取得。
     $stmt = $pdo->prepare("SELECT threads.*, CONCAT(members.name_sei, ' ', members.name_mei) AS member_name FROM threads JOIN members ON threads.member_id = members.id WHERE threads.id = :id");
     $stmt->bindParam(':id', $thread_id, PDO::PARAM_INT);
@@ -38,6 +43,14 @@ try {
     $stmt->bindParam(':thread_id', $thread_id, PDO::PARAM_INT);
     $stmt->execute();
     $reaction_count = $stmt->fetchColumn();
+
+    // コメント情報を取得。指定されたIDに対応するコメント情報をDBから取得。そのコメントを投稿したユーザの名前を結合して取得。
+    $stmt = $pdo->prepare("SELECT comments.*, CONCAT(members.name_sei, ' ', members.name_mei) AS member_name FROM comments JOIN members ON comments.member_id = members.id WHERE comments.thread_id = :thread_id ORDER BY comments.created_at ASC LIMIT :limit OFFSET :offset");
+    $stmt->bindParam(':thread_id', $thread_id, PDO::PARAM_INT);
+    $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+    $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
+    $stmt->execute();
+    $comments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // POSTリクエスト（コメント(reaction)のバリデーション）の処理
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -60,13 +73,15 @@ try {
             ]);
 
             // 保存成功後、同じページにリダイレクト
-            header("Location: thread_detail.php?id=$thread_id");
+            header("Location: thread_detail.php?id=$thread_id&page=$page");
             exit();
         }
     }
 } catch (Exception $e) {
     $error_message = $e->getMessage();
 }
+
+$total_pages = ceil($reaction_count / $limit);
 
 ?>
 
@@ -75,6 +90,13 @@ try {
 <head>
     <meta charset="utf-8">
     <title>スレッド詳細</title>
+    <style>
+        .disabled {
+            pointer-events: none;
+            color: grey;
+            text-decoration: none;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -89,27 +111,33 @@ try {
             <?php echo $reaction_count; ?>コメント
             <?php echo htmlspecialchars($thread['created_at']); ?>
             <br>
+            <!-- 投稿者氏名、投稿日時、コメントを表示 -->
             投稿者：<?php echo htmlspecialchars($thread['member_name']); ?>
             <?php echo htmlspecialchars($thread['created_at']); ?>
             <p><?php echo htmlspecialchars($thread['content']); ?></p>
-            <!-- コメントID、氏名、投稿日時、コメントを表示 -->
+
+            <!-- コメントID、コメント主氏名、投稿日時、コメントを表示 -->
             <?php if (!empty($comments)): ?>
-                <ul>
+                <ul style="list-style-type: none;">
                     <?php foreach ($comments as $comment): ?>
                         <li>
-                            <p>ID: <?php echo htmlspecialchars($comment['id']); ?></p>
-                            氏名: <?php echo htmlspecialchars($comment['member_name']); ?>
-                            投稿日時: <?php echo htmlspecialchars($comment['created_at']); ?>
-                            <p>コメント: <?php echo nl2br(htmlspecialchars($comment['comment'])); ?></p>
+                            <?php echo htmlspecialchars($comment['id']); ?>.
+                            <?php echo htmlspecialchars($comment['member_name']); ?>
+                            <?php echo htmlspecialchars($comment['created_at']); ?>
+                            <p><?php echo nl2br(htmlspecialchars($comment['comment'])); ?></p>
                         </li>
-                    <?php endforeach; ?>
-                </ul>
+                    <?php endforeach; ?>       
+                    </ul>
+                    <div class="pagination">
+                    <a class="<?php echo ($page <= 1) ? 'disabled' : ''; ?>" href="thread_detail.php?id=<?php echo $thread_id; ?>&page=<?php echo $page - 1; ?>">前へ</a>
+                    <a class="<?php echo ($page >= $total_pages) ? 'disabled' : ''; ?>" href="thread_detail.php?id=<?php echo $thread_id; ?>&page=<?php echo $page + 1; ?>">次へ</a>
+                    </div>
             <?php else: ?>
                 <p>コメントがありません。</p>
             <?php endif; ?>
 
             <?php if($loggedIn): ?>
-                <form action="thread_detail.php?id=<?php echo $thread_id; ?>" method="POST">
+                <form action="thread_detail.php?id=<?php echo $thread_id; ?>&page=<?php echo $page; ?>" method="POST">
                     <textarea name="reaction"></textarea>
                     <?php if (isset($errors['reaction'])): ?>
                         <p style="color: red;"><?php echo htmlspecialchars($errors['reaction']); ?></p>
