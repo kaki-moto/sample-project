@@ -35,26 +35,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $email = $_POST['email'];
             $password = $_POST['pass'];
             
-            // データベースでユーザー（メールアドレス）を検索
-            $stmt = $pdo->prepare("SELECT * FROM members WHERE email = :email");
+            // DBでユーザー（メールアドレス）を検索、退会していないユーザー（deleted_at がNULL）のみ取得。。
+            $stmt = $pdo->prepare("SELECT * FROM members WHERE email = :email AND deleted_at IS NULL");
             $stmt->bindParam(':email', $email);
             $stmt->execute();
 
             // DB内に一致するメールアドレスが1つだけある場合
             if ($stmt->rowCount() == 1) {
                 $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-                // ログの追加
-                // error_log('Password: ' . $password);
-                // error_log('User Password from DB: ' . $user['password']);
-
-                // テスト用のパスワード
-                // $password = 'test1234';
-                // パスワードをハッシュ化
-                // $user['password'] = password_hash($password, PASSWORD_DEFAULT);
-            
-                // $user['password'] =  '$2y$10$nh7juCfOWMQp0Eg.UxsdwunFUwhLOnOTh7j24KXg37n5rsnKT0IJm';
-                
 
                 // パスワードの照合
                 if (password_verify($password, $user['password'])) {

@@ -36,24 +36,32 @@ if(isset($_SESSION['user_id'])){
     <header>
 
         <!-- ログイン状態 -->
-            <?php if($loggedIn): ?>
-                <p>ようこそ <?php echo htmlspecialchars($userName); ?> 様</p>
-                <a href="thread.php">スレッド一覧</a>
-                <a href="thread_regist.php">新規スレッド作成</a>
-                <!-- クリックでログアウト状態のtop.phpへ -->
-                <!-- 単にtop.phpに遷移するだけでなく、ログアウト処理を呼び出すこと -->
-                <a href="top.php?logout=1">ログアウト</a>
+        <?php if($loggedIn): ?>
+            <p>ようこそ <?php echo htmlspecialchars($userName); ?> 様</p>
+            <a href="thread.php">スレッド一覧</a>
+            <a href="thread_regist.php">新規スレッド作成</a>
+            <!-- クリックでログアウト状態のtop.phpへ -->
+            <!-- 単にtop.phpに遷移するだけでなく、ログアウト処理を呼び出すこと -->
+            <a href="top.php?logout=1">ログアウト</a>
 
-            <!-- ログアウト状態 -->
-            <?php else: ?>
-                <a href="thread.php">スレッド一覧</a>
-                <a href="member_regist.php">新規会員登録</a>
-                <a href="login.php">ログイン</a>
-            <?php endif; ?>
+        <!-- ログアウト状態 -->
+        <?php else: ?>
+            <a href="thread.php">スレッド一覧</a>
+            <a href="member_regist.php">新規会員登録</a>
+            <a href="login.php">ログイン</a>
+        <?php endif; ?>
 
     </header>
+
     <main>
 
     </main>
+
+
+    <footer>
+        <?php if($loggedIn): ?>
+            <a href="member_withdrawal.php">退会</a>
+        <?php endif; ?>  
+    </footer>
 </body>
 </html>

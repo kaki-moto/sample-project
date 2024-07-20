@@ -10,34 +10,38 @@ if (!isset($_SESSION['user_id'])) {
 
 $dsn = 'mysql:host=localhost;dbname=sampledb;charset=utf8mb4';
 $username = 'root';
-$passwordDb = 'K4aCuFEh';
+$passworddb = 'K4aCuFEh';
 
 // 退会するボタンが押されてリロードしてPOST受け取ったら
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // DBへ接続して退会処理（ソフトデリート）を行っていく。
     // DBに接続できたかできてないかわかるようにするためtry…catch文
     try {
-        $pdo = new PDO($dsn, $username, $password);
+        $pdo = new PDO($dsn, $username, $passworddb);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
         // 退会処理　membersテーブルのdeleted_atカラムに削除日時を挿入
-        
-        // 
+        $member_id = $_SESSION['user_id'];
+        $now = date('Y-m-d H:i:s');
+        // 退会日時を設定
+        $stmt = $pdo->prepare("UPDATE members SET deleted_at = :deleted_at WHERE id = :id"); //会員ID
+        $stmt->execute([
+            ':deleted_at' => $now,
+            ':id' => $member_id
+        ]);
 
-        if ($stmt->execute()) {
-            // DBで退会処理（ソフトデリート）成功、退会処理が成功すればtop.phpに遷移
-            header('Location: top.php');
-            exit();
-        } else {
-            echo "退会処理中にエラーが発生しました。";
-        }
+        // セッションを破棄
+        session_unset();
+        session_destroy();
+
+        // DBで退会処理（ソフトデリート）成功、退会処理が成功すればtop.phpに遷移
+        header('Location: top.php');
+        exit;   
+
     // DBに接続できなかった時の処理
     } catch (PDOException $e) {
-        echo '接続失敗: ' . $e->getMessage();
+        echo '退会処理中にエラーが発生しました: ' . $e->getMessage();
     }
-
-    
-    
 }
 
 
@@ -62,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <h3>退会</h3>
         <p>退会しますか？</p>
 
-        <form action="withdrawal.php" method="post">
+        <form action="member_withdrawal.php" method="post">
         <input type="submit" value="退会する">
         </form>
 

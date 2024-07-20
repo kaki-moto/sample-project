@@ -1,6 +1,6 @@
 <?php
 session_start();
-date_default_timezone_set('Asia/Tokyo'); //日本時間に
+date_default_timezone_set('Asia/Tokyo'); //日本時間
 
 if(isset($_SESSION['user_id'])){
     // ログイン済み（成功してthread.php）の場合
@@ -28,6 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo "フォームデータが存在しません。";
         exit;
     }
+
     // スレッド一覧を表示する前に、thread_confirmからPOSTメソッド送信されてきたスレタイやコメントをDBのthreadsテーブルに挿入。
     try {
         $pdo = new PDO($dsn, $username, $password);
