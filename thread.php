@@ -15,7 +15,7 @@ $dsn = 'mysql:host=localhost;dbname=sampledb;charset=utf8mb4';
 $username = 'root';
 $password = 'K4aCuFEh';
 
-// thread.phpからPOSTメソッドで送信されたものを受け取る。二重送信対策。
+// thread_confirm.phpからPOSTメソッドで送信されたものを受け取る。二重送信対策。
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
         echo "不正なリクエストです。";
