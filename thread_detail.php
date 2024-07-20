@@ -91,12 +91,16 @@ $total_pages = ceil($reaction_count / $limit);
     <meta charset="utf-8">
     <title>スレッド詳細</title>
     <style>
-        .disabled {
-            pointer-events: none;
-            color: grey;
-            text-decoration: none;
-        }
-    </style>
+    .pagination a {
+        text-decoration: none;
+        color: black;
+        margin: 0 5px;
+    }
+    .pagination a.disabled {
+        color: grey;
+        pointer-events: none;
+    }
+</style>
 </head>
 <body>
     <header>
@@ -111,6 +115,14 @@ $total_pages = ceil($reaction_count / $limit);
             <?php echo $reaction_count; ?>コメント
             <?php echo htmlspecialchars($thread['created_at']); ?>
             <br>
+            <!-- ページネーション -->
+            <div class="pagination">
+                <!-- $page <= 1 の場合、つまり現在のページが1ページ目かそれ以前の場合、リンクに 'disabled' クラスが追加 -->
+                <a class="<?php echo ($page <= 1) ? 'disabled' : ''; ?>" href="thread_detail.php?id=<?php echo $thread_id; ?>&page=<?php echo $page - 1; ?>">前へ&gt;</a>
+                <!-- $page >= $total_pagesの場合、つまり現在のページが最後のページかそれ以降の場合、リンクに 'disabled' クラスが追加 -->
+                <a class="<?php echo ($page >= $total_pages) ? 'disabled' : ''; ?>" href="thread_detail.php?id=<?php echo $thread_id; ?>&page=<?php echo $page + 1; ?>">次へ&gt;</a>
+            </div>
+            
             <!-- 投稿者氏名、投稿日時、コメントを表示 -->
             投稿者：<?php echo htmlspecialchars($thread['member_name']); ?>
             <?php echo htmlspecialchars($thread['created_at']); ?>
@@ -127,11 +139,12 @@ $total_pages = ceil($reaction_count / $limit);
                             <p><?php echo nl2br(htmlspecialchars($comment['comment'])); ?></p>
                         </li>
                     <?php endforeach; ?>       
-                    </ul>
-                    <div class="pagination">
-                    <a class="<?php echo ($page <= 1) ? 'disabled' : ''; ?>" href="thread_detail.php?id=<?php echo $thread_id; ?>&page=<?php echo $page - 1; ?>">前へ</a>
-                    <a class="<?php echo ($page >= $total_pages) ? 'disabled' : ''; ?>" href="thread_detail.php?id=<?php echo $thread_id; ?>&page=<?php echo $page + 1; ?>">次へ</a>
-                    </div>
+                </ul>
+                <!-- ページネーション -->
+                <div class="pagination">
+                <a class="<?php echo ($page <= 1) ? 'disabled' : ''; ?>" href="thread_detail.php?id=<?php echo $thread_id; ?>&page=<?php echo $page - 1; ?>">前へ&gt;</a>
+                <a class="<?php echo ($page >= $total_pages) ? 'disabled' : ''; ?>" href="thread_detail.php?id=<?php echo $thread_id; ?>&page=<?php echo $page + 1; ?>">次へ&gt;</a>
+                </div>
             <?php else: ?>
                 <p>コメントがありません。</p>
             <?php endif; ?>
