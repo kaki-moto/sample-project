@@ -237,8 +237,8 @@ $total_pages = ceil($reaction_count / $limit);
                             <p><?php echo nl2br(htmlspecialchars($comment['comment'])); ?></p> <!-- コメント -->
                             <!-- いいね機能 -->
                             <div class="like-button" data-comment-id="<?php echo $comment['id']; ?>">
-                                <span class="heart <?php echo $comment['user_liked'] ? 'liked' : ''; ?>">
-                                    <?php echo $comment['like_count'] > 0 ? '♥' : '♡'; ?>
+                                <span class="heart <?php echo ($loggedIn && $comment['user_liked']) ? 'liked' : ''; ?>">
+                                    <?php echo ($loggedIn && $comment['user_liked']) ? '♥' : '♡'; ?>
                                 </span>
                                 <span class="like-count"><?php echo $comment['like_count']; ?></span>
                             </div>
@@ -271,6 +271,7 @@ $total_pages = ceil($reaction_count / $limit);
         <?php endif; ?>
 
     </main>
+
     <script>
     $(document).ready(function() {
         $('.like-button').click(function() {
@@ -309,16 +310,26 @@ $total_pages = ceil($reaction_count / $limit);
             });
         });
 
-         // ログアウト時のいいねアイコンの表示
-         $('.like-button').each(function() {
+    // ページ読み込み時といいねボタンクリック後にいいねの表示を更新
+    function updateLikeDisplay() {
+        $('.like-button').each(function() {
             var heartSpan = $(this).find('.heart');
             var likeCount = parseInt($(this).find('.like-count').text());
-
-            if (!isLoggedIn && likeCount > 0) {
-                heartSpan.html('♡');
+            
+            if (!isLoggedIn || !heartSpan.hasClass('liked')) {
+                heartSpan.html('♡').removeClass('liked');
             }
         });
+    }
+
+    // ページ読み込み時に実行
+    updateLikeDisplay();
+
+    // いいねボタンクリック後にも実行
+    $('.like-button').on('click', function() {
+        setTimeout(updateLikeDisplay, 100); // Ajax完了を待つため少し遅延させる
     });
+});
     </script>
 </body>
 </html>
