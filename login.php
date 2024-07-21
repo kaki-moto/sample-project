@@ -58,13 +58,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     exit();
                 } else {
                     // パスワードがDB内に登録されていないものだった
-                    $errors['login'] = 'IDもしくはパスワードが間違っています。'; //一時的に
+                    $errors['login'] = 'IDもしくはパスワードが間違っています。'; 
                 }
             // メールアドレスがDB内に登録されていないものだった
             } else {
-                $errors['login'] = 'IDもしくはメールアドレスが間違っています。'; //一時的に
-            }
-                
+                $errors['login'] = 'IDもしくはメールアドレスが間違っています。'; 
+            }  
         // データベース接続に失敗したら
         } catch (PDOException $e) {
             $errors['database'] = 'データベースエラー: ' . $e->getMessage();
