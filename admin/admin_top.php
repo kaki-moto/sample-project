@@ -1,6 +1,13 @@
 <?php
 session_start();
 
+// admin_top.phpはログインしてる管理者だけが見れるように?
+// ログインしているか確認
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit();
+}
+
 // セッションから値を取得
 $loggedIn = isset($_SESSION['user_id']);
 $userName = $loggedIn ? $_SESSION['user_name'] : '';
