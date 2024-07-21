@@ -41,11 +41,11 @@ if(isset($_SESSION['user_id'])){
 </head>
 <body>
     <header>
-        <h3>掲示板管理画面メインメニュー</h3>
+        <strong>掲示板管理画面メインメニュー</strong>
 
         <!-- ログイン状態 -->
         <?php if($loggedIn): ?>
-            <p>ようこそ<?php echo htmlspecialchars($_SESSION['user_name']); ?>さん</p>
+            ようこそ<?php echo htmlspecialchars($_SESSION['user_name']); ?>さん
             <!-- クリックでログアウト状態のtop.phpへ -->
             <!-- 単にadmin内の管理者用admin_top.phpをリロードするのではなく、ログアウト処理を呼び出すこと -->
             <a href="admin_top.php?logout=1">ログアウト</a>
