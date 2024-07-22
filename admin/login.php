@@ -18,6 +18,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors['login_id'] = '※ログインIDは10文字以内で入力してください。';
     } elseif (!preg_match('/^[a-zA-Z0-9]+$/', $_POST['login_id'])) {
         $errors['login_id'] = '※ログインIDは半角英数字で入力してください。';
+    } else {
+        $_SESSION['login_id'] = $_POST['login_id']; // ログインIDをセッションに保存
     }
 
     // パスワードのバリデーション
@@ -76,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <form action="login.php" method="post">
         <label>
             ログインID
-            <input type="text" name="login_id">
+            <input type="text" name="login_id" value="<?php echo htmlspecialchars($_SESSION['login_id'] ?? '', ENT_QUOTES); ?>">
             <?php if (isset($errors['login_id'])): ?>
                 <p style="color: red;"><?php echo htmlspecialchars($errors['login_id'], ENT_QUOTES); ?></p>
             <?php endif; ?>
@@ -84,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <br>
         <label>
             パスワード
-            <input type="password" name="password">
+            <input type="password" name="password"; ?>">
             <?php if (isset($errors['password'])): ?>
                 <p style="color: red;"><?php echo htmlspecialchars($errors['password'], ENT_QUOTES); ?></p>
             <?php endif; ?>

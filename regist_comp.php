@@ -1,5 +1,6 @@
 <?php 
 session_start();
+date_default_timezone_set('Asia/Tokyo'); //日本時間に
 
 // CSRFトークンの検証
 if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
@@ -50,13 +51,6 @@ try {
     // 現在の日時を取得した上で$createdAtと$updatedAtの変数を設定
     $createdAt = date( 'Y-m-d H:i:s');
     $updatedAt = date( 'Y-m-d H:i:s');
-    
-    // ハッシュ化されたパスワードをログに出力
-    //error_log('Password Hash: ' . $passwordHash);
-
-    //error_log('Password Hash: ' . $passwordHash);
-
-    // echo 'Password Hash: ' . $passwordHash;
   
     // ユーザーの会員情報をデータベースに挿入する SQLクエリ
     $stmt = $pdo->prepare("INSERT INTO members (name_sei, name_mei, gender, pref_name, address, password, email, created_at, updated_at)
