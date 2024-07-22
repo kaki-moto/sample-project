@@ -86,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <br>
         <label>
             パスワード
-            <input type="password" name="password"; ?>">
+            <input type="password" name="password"; ?>
             <?php if (isset($errors['password'])): ?>
                 <p style="color: red;"><?php echo htmlspecialchars($errors['password'], ENT_QUOTES); ?></p>
             <?php endif; ?>

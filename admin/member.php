@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-// 管理者用member.phpはログインしてる管理者だけが見れるように?
+// 管理者用member.phpはログインしてる管理者だけが見れるように
 // ログインしているか確認
 if (!isset($_SESSION['user_id'])) {
     header('Location: login.php');
@@ -19,6 +19,17 @@ if (isset($_GET['logout']) && $_GET['logout'] == 1) {
     exit();
 }
 
+// 都道府県のリスト（検索の時に使う）
+$prefectures = [
+    '北海道', '青森県', '岩手県', '宮城県', '秋田県', '山形県', '福島県',
+    '茨城県', '栃木県', '群馬県', '埼玉県', '千葉県', '東京都', '神奈川県',
+    '新潟県', '富山県', '石川県', '福井県', '山梨県', '長野県', '岐阜県',
+    '静岡県', '愛知県', '三重県', '滋賀県', '京都府', '大阪府', '兵庫県',
+    '奈良県', '和歌山県', '鳥取県', '島根県', '岡山県', '広島県', '山口県',
+    '徳島県', '香川県', '愛媛県', '高知県', '福岡県', '佐賀県', '長崎県',
+    '熊本県', '大分県', '宮崎県', '鹿児島県', '沖縄県'
+];
+
 $dsn = 'mysql:host=localhost;dbname=sampledb;charset=utf8mb4';
 $username = 'root';
 $password = 'K4aCuFEh';
@@ -31,44 +42,95 @@ $offset = ($page - 1) * $limit; // DBのどの行からデータを取得する�
 // ソート順の取得
 $sort = isset($_GET['sort']) ? $_GET['sort'] : 'id';
 $order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
-
 // 逆のソート順を決定
 $reverse_order = ($order == 'ASC') ? 'DESC' : 'ASC';
 
-if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+// 検索条件の取得
+$searchId = isset($_GET['search_id']) ? $_GET['search_id'] : '';
+$searchGender = isset($_GET['search_gender']) ? $_GET['search_gender'] : [];
+$searchPref = isset($_GET['search_pref']) ? $_GET['search_pref'] : '';
+$searchKeyword = isset($_GET['search_keyword']) ? $_GET['search_keyword'] : '';
 
-    try {
-        // DBへの接続を確立
-        $pdo = new PDO($dsn, $username, $password);
-        // エラー発生時に例外をスローするように設定
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+try {
+    // DBへの接続を確立
+    $pdo = new PDO($dsn, $username, $password);
+    // エラー発生時に例外をスローするように設定
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        // ページネーションのためmembersテーブルから総member数を取得。さらに、membersテーブルのdeleted_atカラムがNULLである場合のみデータを取得
-        $stmt = $pdo->prepare('SELECT COUNT(*) FROM members WHERE deleted_at IS NULL');
-        $stmt->execute();
-        $total_members = $stmt->fetchColumn();
-
-        $total_pages = ceil($total_members / $limit);
-
-        // DBのmemberテーブルから会員情報を取得（ソート順を反映）
-        $stmt = $pdo->prepare("SELECT id, CONCAT(name_sei, name_mei) as name, gender, CONCAT(pref_name, address) as address, created_at 
-        FROM members 
-        WHERE deleted_at IS NULL
-        ORDER BY $sort $order
-        LIMIT :limit OFFSET :offset");
-        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
-        $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
-        $stmt->execute();
-        $members = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-
-
-    } catch (PDOException $e) {
-        echo '接続失敗: ' . $e->getMessage();
+    // 検索クエリの作成
+    $query = "SELECT COUNT(*) FROM members WHERE deleted_at IS NULL";
+    $params = [];
+    if (!empty($searchId)) {
+        $query .= " AND id = :id";
+        $params[':id'] = $searchId;
     }
+    if (!empty($searchGender)) {
+        $genderPlaceholders = [];
+        foreach ($searchGender as $index => $gender) {
+            $genderPlaceholders[] = ':gender' . $index;
+            $params[':gender' . $index] = $gender;
+        }
+        $query .= " AND gender IN (" . implode(',', $genderPlaceholders) . ")";
+    }
+    if (!empty($searchPref)) {
+        $query .= " AND pref_name = :pref";
+        $params[':pref'] = $searchPref;
+    }
+    if (!empty($searchKeyword)) {
+        $query .= " AND (name_sei LIKE :keyword OR name_mei LIKE :keyword)";
+        $params[':keyword'] = '%' . $searchKeyword . '%';
+    }
+
+    $stmt = $pdo->prepare($query);
+    $stmt->execute($params);
+    $total_members = $stmt->fetchColumn();
+
+    $total_pages = ceil($total_members / $limit);
+
+    // DBのmemberテーブルから会員情報を取得（ソート順を反映、検索条件を考慮）
+    $query = "SELECT id, CONCAT(name_sei, name_mei) as name, gender, CONCAT(pref_name, address) as address, created_at 
+    FROM members 
+    WHERE deleted_at IS NULL";
+    
+    $queryParams = [];
+    // ID
+    if (!empty($searchId)) {
+        $query .= " AND id = :id";
+        $queryParams[':id'] = $searchId;
+    }
+    // 性別
+    if (!empty($searchGender)) {
+        $genderPlaceholders = [];
+        foreach ($searchGender as $index => $gender) {
+            $genderPlaceholders[] = ':gender' . $index;
+            $queryParams[':gender' . $index] = $gender;
+        }
+        $query .= " AND gender IN (" . implode(',', $genderPlaceholders) . ")";
+    }
+    // 都道府県
+    if (!empty($searchPref)) {
+        $query .= " AND pref_name = :pref";
+        $queryParams[':pref'] = $searchPref;
+    }
+    // フリーワード
+    if (!empty($searchKeyword)) {
+        $query .= " AND (name_sei LIKE :keyword OR name_mei LIKE :keyword)";
+        $queryParams[':keyword'] = '%' . $searchKeyword . '%';
+    }
+
+    $query .= " ORDER BY " . ($sort == 'created_at' ? 'created_at' : $sort) . " $order LIMIT :limit OFFSET :offset";
+    $stmt = $pdo->prepare($query);
+    foreach ($queryParams as $key => $value) {
+        $stmt->bindValue($key, $value);
+    }
+    $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+    $stmt->execute();
+    $members = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+} catch (PDOException $e) {
+    echo '接続失敗: ' . $e->getMessage();
 }
-
-
 ?>
 
 <!DOCTYPE html>
@@ -112,6 +174,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
     <main>
     <!-- 会員検索 -->
+    <div>
+        <form action="member.php" method="GET">
+            <!-- ID -->
+            <input type="text" name="search_id" placeholder="ID" value="<?php echo htmlspecialchars($searchId); ?>">
+
+            <!-- 性別 -->
+            <input type="checkbox" name="search_gender[]" value="1" <?php echo in_array('1', $searchGender) ? 'checked' : ''; ?>>男性
+            <input type="checkbox" name="search_gender[]" value="2" <?php echo in_array('2', $searchGender) ? 'checked' : ''; ?>>女性
+
+            <!-- 都道府県 -->
+            <select name="search_pref">
+                <option value="">選択してください</option>
+                <?php foreach ($prefectures as $prefecture): ?>
+                    <option value="<?php echo htmlspecialchars($prefecture, ENT_QUOTES); ?>" <?php echo $searchPref == $prefecture ? 'selected' : ''; ?>>
+                    <?php echo htmlspecialchars($prefecture, ENT_QUOTES); ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+
+            <!-- フリーワード -->
+            <input type="text" name="search_keyword" placeholder="フリーワード" value="<?php echo htmlspecialchars($searchKeyword); ?>">
+
+            <!-- 検索 -->
+            <input type="submit" value="検索する">
+        </form>
+    </div>
 
     <!-- 会員一覧 1ページあたり10件 -->
     <!-- 会員がいれば -->
@@ -126,7 +214,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 <th>氏名</th>
                 <th>性別</th>
                 <th>住所</th>
-                <th>登録日時</th>
+                <th>
+                    <a href="?page=<?php echo $page; ?>&sort=created_at&order=<?php echo $reverse_order; ?>" class="sort-link">
+                        登録日時<?php echo ($sort == 'created_at') ? ($order == 'ASC' ? '▲' : '▼') : '▼'; ?>
+                    </a>
+                </th>
             </tr>
             <?php foreach ($members as $member): ?>
             <tr>
