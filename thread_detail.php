@@ -17,56 +17,44 @@ try {
     $pdo = new PDO($dsn, $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     
-    // いいね処理
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['like_comment_id'])) {
-        $comment_id = $_POST['like_comment_id'];
-        $member_id = $_SESSION['user_id'];  // セッション変数名は実際の使用に合わせてください
-    
-        // いいねの存在確認
-        $stmt = $pdo->prepare("SELECT * FROM likes WHERE member_id = ? AND comment_id = ?");
-        $stmt->execute([$member_id, $comment_id]);
-        $existing_like = $stmt->fetch();
-    
-        if ($existing_like) {
-            // いいねを削除
-            $stmt = $pdo->prepare("DELETE FROM likes WHERE member_id = ? AND comment_id = ?");
+        // いいね処理
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['like_comment_id'])) {
+            $comment_id = $_POST['like_comment_id'];
+            $member_id = $_SESSION['user_id'];  
+        
+            // いいねの存在確認
+            $stmt = $pdo->prepare("SELECT * FROM likes WHERE member_id = ? AND comment_id = ?");
             $stmt->execute([$member_id, $comment_id]);
-            $liked = false;
-        } else {
-            // いいねを追加
-            $stmt = $pdo->prepare("INSERT INTO likes (member_id, comment_id) VALUES (?, ?)");
-            $stmt->execute([$member_id, $comment_id]);
-            $liked = true;
+            $existing_like = $stmt->fetch();
+        
+            if ($existing_like) {
+                // いいねを削除
+                $stmt = $pdo->prepare("DELETE FROM likes WHERE member_id = ? AND comment_id = ?");
+                $stmt->execute([$member_id, $comment_id]);
+                $liked = false;
+            } else {
+                // いいねを追加
+                $stmt = $pdo->prepare("INSERT INTO likes (member_id, comment_id) VALUES (?, ?)");
+                $stmt->execute([$member_id, $comment_id]);
+                $liked = true;
+            }
+    
+            // いいねの総数を取得
+            $stmt = $pdo->prepare("SELECT COUNT(*) as count FROM likes WHERE comment_id = ?");
+            $stmt->execute([$comment_id]);
+            $like_count = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+    
+            // Ajax リクエストの場合は JSON を返す
+            if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+                echo json_encode(['success' => true, 'liked' => $liked, 'likeCount' => $like_count]);
+                exit;
+            } else {
+                // 通常のPOSTリクエストの場合はリダイレクト
+                header("Location: thread_detail.php?id=$thread_id&page=$page");
+                exit;
+            }
         }
     
-
-        // いいねの総数を取得
-        $stmt = $pdo->prepare("SELECT COUNT(*) as count FROM likes WHERE comment_id = ?");
-        $stmt->execute([$comment_id]);
-        $like_count = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
-
-        // Ajax リクエストの場合は JSON を返す
-        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
-            echo json_encode(['success' => true, 'liked' => $liked, 'likeCount' => $like_count]);
-            exit;
-        } else {
-            // 通常のPOSTリクエストの場合はリダイレクト
-            header("Location: thread_detail.php?id=$thread_id&page=$page");
-            exit;
-        }
-    }
-
-    // スレッドIDを取得
-    if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-        throw new Exception("無効なスレッドIDです。");
-    }
-    $thread_id = intval($_GET['id']);
-
-    // ページ番号を取得
-    $page = isset($_GET['page']) && is_numeric($_GET['page']) ? intval($_GET['page']) : 1;
-    $limit = 5; // 1ページに表示するコメントの数
-    $offset = ($page - 1) * $limit;
-
 
     // スレッドIDを取得
     if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {

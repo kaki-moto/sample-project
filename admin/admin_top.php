@@ -53,6 +53,10 @@ if(isset($_SESSION['user_id'])){
     </header>
 
     <main>
+        <form action="member.php" method="get">
+            <input type="submit" value="会員一覧">
+        </form>
     </main>
+
 </body>
 </html>
