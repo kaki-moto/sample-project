@@ -26,18 +26,28 @@ $password = 'K4aCuFEh';
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
     try {
-        // データベースへの接続を確立
+        // DBへの接続を確立
         $pdo = new PDO($dsn, $username, $password);
         // エラー発生時に例外をスローするように設定
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        // DBのmemberテーブルから会員ID、氏名、性別、住所（都道府県＋それ以降の住所）、登録日時を取得
-        $memberId = $_SESSION['user_id']; // 会員ID
-        $name = $_SESSION['name_mei'].$_SESSION['name_sei']; // 氏名
-        $gender = $_SESSION['gender']; // 性別
-        $address = $_SESSION['pref_name'].$_SESSION['address']; // 住所（都道府県＋それ以降の住所）
-        $createdAt = date( 'Y-m-d H:i:s'); // 登録日時
+        // DBのmemberテーブルから会員情報を取得
+        $stmt = $pdo->prepare('SELECT id, CONCAT(name_sei, name_mei) as name, gender, CONCAT(pref_name, address) as address, created_at FROM members WHERE id = :member_id');
+        $stmt->bindParam(':member_id', $_SESSION['user_id'], PDO::PARAM_INT);
+        $stmt->execute();
+        $member = $stmt->fetch(PDO::FETCH_ASSOC);
 
+        if ($member) {
+            $memberId = $member['id'];
+            $name = $member['name'];
+            $gender = $member['gender'];
+            $address = $member['address'];
+            $createdAt = $member['created_at'];
+        } else {
+            // 該当する会員が見つからない場合の処理
+            echo '会員情報が見つかりません。';
+            exit();
+        }
     } catch (PDOException $e) {
         echo '接続失敗: ' . $e->getMessage();
     }
@@ -69,23 +79,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     <!-- 会員検索 -->
 
     <!-- 会員一覧 1ページあたり10件 -->
-    <table border="1" width="70%">
-        <tr bgcolor="gray">
-            <th>ID</th>
-            <th>氏名</th>
-            <th>性別</th>
-            <th>住所</th>
-            <th>登録日時</th>
-        </tr>
-        <tr>
-            <!-- 会員ID、氏名、性別、住所、登録日時 -->
-            <th><?php echo htmlspecialchars($memberId); ?></th>
-            <th><?php echo htmlspecialchars($name); ?></th>
-            <th><?php echo htmlspecialchars($gender); ?></th>
-            <th><?php echo htmlspecialchars($address); ?></th>
-            <th><?php echo htmlspecialchars($createdAt); ?></th>
-        </tr>
-    </table>
+    <!-- 会員がいれば -->
+    <?php if (isset($member)): ?>
+        <table border="1" width="70%">
+            <tr bgcolor="gray">
+                <th>ID</th>
+                <th>氏名</th>
+                <th>性別</th>
+                <th>住所</th>
+                <th>登録日時</th>
+            </tr>
+            <?php foreach ($members as $member): ?>
+            <tr>
+                <!-- 会員ID、氏名、性別、住所、登録日時 -->
+                <th><?php echo htmlspecialchars($memberId); ?></th>
+                <th><?php echo htmlspecialchars($name); ?></th>
+                <th><?php echo htmlspecialchars($gender); ?></th>
+                <th><?php echo htmlspecialchars($address); ?></th>
+                <th><?php echo htmlspecialchars($createdAt); ?></th>
+            </tr>
+            <?php endforeach; ?>
+        </table>
+    <?php else: ?>
+        <p>会員はいません。</p>
+    <?php endif; ?>
 
 
     </main>

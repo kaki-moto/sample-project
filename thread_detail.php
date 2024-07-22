@@ -77,8 +77,13 @@ try {
         throw new Exception("スレッドが見つかりません。");
     }
 
-    // commentsテーブルから総reaction数を取得
-    $stmt = $pdo->prepare("SELECT COUNT(*) as reaction_count FROM comments WHERE thread_id = :thread_id");
+    // commentsテーブルから総reaction数を取得。さらに、membersテーブルのdeleted_atカラムがNULLである場合のみデータを取得
+    $stmt = $pdo->prepare("
+    SELECT COUNT(comments.id) as reaction_count 
+    FROM comments 
+    JOIN members ON comments.member_id = members.id 
+    WHERE comments.thread_id = :thread_id AND members.deleted_at IS NULL
+    ");
     $stmt->bindParam(':thread_id', $thread_id, PDO::PARAM_INT);
     $stmt->execute();
     $reaction_count = $stmt->fetchColumn();
