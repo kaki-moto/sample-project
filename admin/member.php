@@ -39,14 +39,11 @@ $page = isset($_GET['page']) && is_numeric($_GET['page']) ? intval($_GET['page']
 $limit = 10; // 1ページに表示するコメントの数
 $offset = ($page - 1) * $limit; // DBのどの行からデータを取得するか。$pageが1なら$offsetは0で、$pageが2なら$offsetは10で10行目からデータ取得。
 
-
-// 並び替え機能
 // ソート順の取得
-$sort = isset($_GET['sort']) && in_array($_GET['sort'], ['id', 'created_at']) ? $_GET['sort'] : 'id';
-$order = isset($_GET['order']) && in_array($_GET['order'], ['ASC', 'DESC']) ? $_GET['order'] : 'DESC';
+$sort = isset($_GET['sort']) ? $_GET['sort'] : 'id';
+$order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
 // 逆のソート順を決定
 $reverse_order = ($order == 'ASC') ? 'DESC' : 'ASC';
-
 
 // 検索条件の取得
 $searchId = isset($_GET['search_id']) ? $_GET['search_id'] : '';
@@ -121,12 +118,7 @@ try {
         $queryParams[':keyword'] = '%' . $searchKeyword . '%';
     }
 
-    $query .= " ORDER BY $sort $order";
-    if ($sort == 'created_at') {
-        $query .= ", id $order";
-    }
-    $query .= " LIMIT :limit OFFSET :offset";
-
+    $query .= " ORDER BY " . ($sort == 'created_at' ? 'created_at' : $sort) . " $order LIMIT :limit OFFSET :offset";
     $stmt = $pdo->prepare($query);
     foreach ($queryParams as $key => $value) {
         $stmt->bindValue($key, $value);
@@ -237,21 +229,23 @@ $pagination_link .= "&page=";
     <!-- 会員がいれば -->
     <?php if (isset($members) && count($members) > 0): ?>
         <table border="1" width="70%">
-        <tr bgcolor="gray">
-          <th>
-              <a href="?<?php echo http_build_query(array_merge($_GET, ['sort' => 'id', 'order' => ($sort == 'id' && $order == 'DESC') ? 'ASC' : 'DESC', 'page' => 1])); ?>" class="sort-link">
-                  ID<?php echo ($sort == 'id') ? ($order == 'ASC' ? '▲' : '▼') : ''; ?>
-              </a>
-          </th>
-          <th>氏名</th>
-          <th>性別</th>
-          <th>住所</th>
-          <th>
-              <a href="?<?php echo http_build_query(array_merge($_GET, ['sort' => 'created_at', 'order' => ($sort == 'created_at' && $order == 'DESC') ? 'ASC' : 'DESC', 'page' => 1])); ?>" class="sort-link">
-                  登録日時<?php echo ($sort == 'created_at') ? ($order == 'ASC' ? '▲' : '▼') : ''; ?>
-              </a>
-          </th>
-        </tr>
+            <tr bgcolor="gray">
+                <th>
+                    <!-- 変更箇所：ソートリンク -->
+                    <a href="?<?php echo http_build_query(array_merge($_GET, ['sort' => 'id', 'order' => $reverse_order, 'page' => 1])); ?>" class="sort-link">
+                        ID<?php echo ($sort == 'id') ? ($order == 'ASC' ? '▲' : '▼') : ''; ?>
+                    </a>
+                </th>
+                <th>氏名</th>
+                <th>性別</th>
+                <th>住所</th>
+                <th>
+                    <!-- 変更箇所：ソートリンク -->
+                    <a href="?<?php echo http_build_query(array_merge($_GET, ['sort' => 'created_at', 'order' => $reverse_order, 'page' => 1])); ?>" class="sort-link">
+                        登録日時<?php echo ($sort == 'created_at') ? ($order == 'ASC' ? '▲' : '▼') : '▼'; ?>
+                    </a>
+                </th>
+            </tr>
             <?php foreach ($members as $member): ?>
             <tr>
                 <td><?php echo htmlspecialchars($member['id']); ?></td>
