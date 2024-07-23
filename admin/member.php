@@ -39,13 +39,16 @@ $page = isset($_GET['page']) && is_numeric($_GET['page']) ? intval($_GET['page']
 $limit = 10; // 1ページに表示するコメントの数
 $offset = ($page - 1) * $limit; // DBのどの行からデータを取得するか。$pageが1なら$offsetは0で、$pageが2なら$offsetは10で10行目からデータ取得。
 
-// ソート順の取得
+// ソート順の取得、URLパラメータからsortというキーの値を取得。指定されていなければデフォルトでidが使用される。
 $sort = isset($_GET['sort']) ? $_GET['sort'] : 'id';
-$order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
+// URLパラメータからorderというキーの値を取得。指定されていなければデフォルトで降順。
+$order = isset($_GET['order']) ? $_GET['order'] : 'DESC';
 // 逆のソート順を決定
-$reverse_order = ($order == 'ASC') ? 'DESC' : 'ASC';
+// 現在のorderの値に基づき、orderがASCであればDESC、DESCであればASCに設定。
+$reverse_order = ($order == 'DESC') ? 'ASC' : 'DESC';
 
 // 検索条件の取得
+// search_idパラメータから値を取得するため。search_idがURLに指定されていればその値を $searchId に代入。指定されていなければ空の文字列 '' を代入。
 $searchId = isset($_GET['search_id']) ? $_GET['search_id'] : '';
 $searchGender = isset($_GET['search_gender']) ? $_GET['search_gender'] : [];
 $searchPref = isset($_GET['search_pref']) ? $_GET['search_pref'] : '';
@@ -132,9 +135,12 @@ try {
     echo '接続失敗: ' . $e->getMessage();
 }
 
-// 変更箇所：ページネーションリンクの生成
+// 変更箇所：ページネーションリンクの生成 &で検索条件を繋いでURLを作る。
+// 例えば ?sort=id&order=ASC となる。
 $pagination_link = "?sort=$sort&order=$order";
+// $searchId（ID検索）が指定されてたら、それをリンク（$pagination_link）に追加。例えば &search_id=23 など。
 if (!empty($searchId)) $pagination_link .= "&search_id=" . urlencode($searchId);
+// search_genderが配列で指定されていた場合。例えば、&search_gender[]=male&search_gender[]=female など
 if (!empty($searchGender)) {
     foreach ($searchGender as $gender) {
         $pagination_link .= "&search_gender[]=" . urlencode($gender);
@@ -142,6 +148,7 @@ if (!empty($searchGender)) {
 }
 if (!empty($searchPref)) $pagination_link .= "&search_pref=" . urlencode($searchPref);
 if (!empty($searchKeyword)) $pagination_link .= "&search_keyword=" . urlencode($searchKeyword);
+// ページ番号を指定するためのプレースホルダー
 $pagination_link .= "&page=";
 
 ?>
@@ -186,8 +193,10 @@ $pagination_link .= "&page=";
     </header>
 
     <main>
+
     <!-- 会員検索 -->
     <div>
+    <!-- GETメソッドを使うとURLパラメータに検索条件が表示される -->
     <form action="member.php" method="GET">
         <table border="1" width="70%">
             <tr>
@@ -197,6 +206,7 @@ $pagination_link .= "&page=";
             <tr>
                 <th bgcolor="gray">性別</th>
                 <td>
+                    <!-- in_array関数で$searchGenderに1が含まれているかチェック。含まれていればchecked属性を追加、含まれていなければ何も追加しない。 -->
                     <input type="checkbox" name="search_gender[]" value="1" <?php echo in_array('1', $searchGender) ? 'checked' : ''; ?>>男性
                     <input type="checkbox" name="search_gender[]" value="2" <?php echo in_array('2', $searchGender) ? 'checked' : ''; ?>>女性
                 </td>
@@ -232,8 +242,10 @@ $pagination_link .= "&page=";
             <tr bgcolor="gray">
                 <th>
                     <!-- 変更箇所：ソートリンク -->
+                    <!-- http_build_query()で配列をクエリ文字列に変換。array_merge($_GET, ['sort' => 'id', 'order' => $reverse_order, 'page' => 1]));で現在のURLパラメータ（$_GET）に新たにsortとorderとpageのパラメータ追加 -->
                     <a href="?<?php echo http_build_query(array_merge($_GET, ['sort' => 'id', 'order' => $reverse_order, 'page' => 1])); ?>" class="sort-link">
-                        ID<?php echo ($sort == 'id') ? ($order == 'ASC' ? '▲' : '▼') : ''; ?>
+                        <!-- 現在のソートキーがidであるかをチェック。ソート順が降順(DESC)なら▲、昇順なら▼を表示、$sortがidでない場合もデフォルトで▲を表示 -->
+                        ID<?php echo ($sort == 'id') ? ($order == 'DESC' ? '▲' : '▼') : '▲'; ?>
                     </a>
                 </th>
                 <th>氏名</th>
@@ -242,7 +254,8 @@ $pagination_link .= "&page=";
                 <th>
                     <!-- 変更箇所：ソートリンク -->
                     <a href="?<?php echo http_build_query(array_merge($_GET, ['sort' => 'created_at', 'order' => $reverse_order, 'page' => 1])); ?>" class="sort-link">
-                        登録日時<?php echo ($sort == 'created_at') ? ($order == 'ASC' ? '▲' : '▼') : '▼'; ?>
+                        <!-- 現在のソートキーがcreated_atであるかをチェック。ソート順が降順(DESC)なら▲、昇順なら▼を表示、$sortがcreated_atでない場合もデフォルトで▲を表示 -->
+                        登録日時<?php echo ($sort == 'created_at') ? ($order == 'DESC' ? '▲' : '▼') : '▲'; ?>
                     </a>
                 </th>
             </tr>
