@@ -131,6 +131,19 @@ try {
 } catch (PDOException $e) {
     echo '接続失敗: ' . $e->getMessage();
 }
+
+// 変更箇所：ページネーションリンクの生成
+$pagination_link = "?sort=$sort&order=$order";
+if (!empty($searchId)) $pagination_link .= "&search_id=" . urlencode($searchId);
+if (!empty($searchGender)) {
+    foreach ($searchGender as $gender) {
+        $pagination_link .= "&search_gender[]=" . urlencode($gender);
+    }
+}
+if (!empty($searchPref)) $pagination_link .= "&search_pref=" . urlencode($searchPref);
+if (!empty($searchKeyword)) $pagination_link .= "&search_keyword=" . urlencode($searchKeyword);
+$pagination_link .= "&page=";
+
 ?>
 
 <!DOCTYPE html>
@@ -175,30 +188,41 @@ try {
     <main>
     <!-- 会員検索 -->
     <div>
-        <form action="member.php" method="GET">
-            <!-- ID -->
-            <input type="text" name="search_id" placeholder="ID" value="<?php echo htmlspecialchars($searchId); ?>">
-
-            <!-- 性別 -->
-            <input type="checkbox" name="search_gender[]" value="1" <?php echo in_array('1', $searchGender) ? 'checked' : ''; ?>>男性
-            <input type="checkbox" name="search_gender[]" value="2" <?php echo in_array('2', $searchGender) ? 'checked' : ''; ?>>女性
-
-            <!-- 都道府県 -->
-            <select name="search_pref">
-                <option value="">選択してください</option>
-                <?php foreach ($prefectures as $prefecture): ?>
+    <form action="member.php" method="GET">
+        <table border="1" width="70%">
+            <tr>
+                <th bgcolor="gray">ID</th>
+                <td><input type="text" name="search_id" value="<?php echo htmlspecialchars($searchId); ?>"></td>
+            </tr>
+            <tr>
+                <th bgcolor="gray">性別</th>
+                <td>
+                    <input type="checkbox" name="search_gender[]" value="1" <?php echo in_array('1', $searchGender) ? 'checked' : ''; ?>>男性
+                    <input type="checkbox" name="search_gender[]" value="2" <?php echo in_array('2', $searchGender) ? 'checked' : ''; ?>>女性
+                </td>
+            </tr>
+            <tr>
+                <th bgcolor="gray">都道府県</th>
+                <td>
+                    <select name="search_pref">
+                    <option value="">選択してください</option>
+                    <?php foreach ($prefectures as $prefecture): ?>
                     <option value="<?php echo htmlspecialchars($prefecture, ENT_QUOTES); ?>" <?php echo $searchPref == $prefecture ? 'selected' : ''; ?>>
                     <?php echo htmlspecialchars($prefecture, ENT_QUOTES); ?>
                     </option>
-                <?php endforeach; ?>
-            </select>
-
-            <!-- フリーワード -->
-            <input type="text" name="search_keyword" placeholder="フリーワード" value="<?php echo htmlspecialchars($searchKeyword); ?>">
-
-            <!-- 検索 -->
-            <input type="submit" value="検索する">
-        </form>
+                    <?php endforeach; ?>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <th bgcolor="gray">フリーワード</th>
+                <td>
+                    <input type="text" name="search_keyword" value="<?php echo htmlspecialchars($searchKeyword); ?>">
+                </td>
+            </tr>
+        </table>
+        <p><input type="submit" value="検索する"></p>
+</form>
     </div>
 
     <!-- 会員一覧 1ページあたり10件 -->
@@ -207,7 +231,8 @@ try {
         <table border="1" width="70%">
             <tr bgcolor="gray">
                 <th>
-                    <a href="?page=<?php echo $page; ?>&sort=id&order=<?php echo $reverse_order; ?>" class="sort-link">
+                    <!-- 変更箇所：ソートリンク -->
+                    <a href="?<?php echo http_build_query(array_merge($_GET, ['sort' => 'id', 'order' => $reverse_order, 'page' => 1])); ?>" class="sort-link">
                         ID<?php echo ($sort == 'id') ? ($order == 'ASC' ? '▲' : '▼') : ''; ?>
                     </a>
                 </th>
@@ -215,7 +240,8 @@ try {
                 <th>性別</th>
                 <th>住所</th>
                 <th>
-                    <a href="?page=<?php echo $page; ?>&sort=created_at&order=<?php echo $reverse_order; ?>" class="sort-link">
+                    <!-- 変更箇所：ソートリンク -->
+                    <a href="?<?php echo http_build_query(array_merge($_GET, ['sort' => 'created_at', 'order' => $reverse_order, 'page' => 1])); ?>" class="sort-link">
                         登録日時<?php echo ($sort == 'created_at') ? ($order == 'ASC' ? '▲' : '▼') : '▼'; ?>
                     </a>
                 </th>
@@ -248,14 +274,13 @@ try {
             $range = 1; // 現在のページの前後に表示するページ数
             $start = max(1, min($page - $range, $total_pages - 2));
             $end = min($total_pages, max($page + $range, 3));
-            $pagination_link = "?sort=$sort&order=$order&page=";
 
             // 「前へ」リンク
             if ($page > 1): ?>
                 <a href="<?php echo $pagination_link . ($page - 1); ?>">前へ&gt;</a>
             <?php endif; 
 
-            // ページ番号リンク 今いるページ番号のクラス名をcurrentにしてCSSで強調
+            // ページ番号リンク
             for ($i = $start; $i <= $end; $i++): ?>
                 <a href="<?php echo $pagination_link . $i; ?>" <?php echo ($i == $page) ? 'class="current"' : ''; ?>><?php echo $i; ?></a>
             <?php endfor;
