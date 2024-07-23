@@ -170,7 +170,7 @@ unset($_SESSION['formData']);
     <form id="form" action="member_regist.php" method="post">
 
         <label>
-            ID
+            ID 登録後に自動採番
         </label>
         
         <br>

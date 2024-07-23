@@ -7,13 +7,11 @@ if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_tok
   echo "不正なリクエストです。";
   exit();
 }
-
 // トークンの使用後に削除
 unset($_SESSION['csrf_token']);
 
 // セッションからフォームデータを取得
-$formData = isset($_SESSION['formData']) ? $_SESSION['formData'] : [];
-
+$formData = isset($_SESSION['formData']) ? $_SESSION['formData'] : []; 
 // セッションデータが存在しない場合
 if(empty($formData)){
   echo "フォームデータが存在しません。";
@@ -28,7 +26,6 @@ $password = 'K4aCuFEh';
 try {
     // データベースへの接続を確立
     $pdo = new PDO($dsn, $username, $password);
-    
     // エラー発生時に例外をスローするように設定
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     

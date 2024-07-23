@@ -1,5 +1,6 @@
 <?php
 session_start();
+date_default_timezone_set('Asia/Tokyo'); //日本時間
 
 // 管理者用member.phpはログインしてる管理者だけが見れるように
 // ログインしているか確認
@@ -262,6 +263,7 @@ $pagination_link .= "&page=";
                         登録日時<?php echo ($sort == 'created_at') ? ($order == 'DESC' ? '▲' : '▼') : '▲'; ?>
                     </a>
                 </th>
+                <th>編集</th>
             </tr>
             <?php foreach ($members as $member): ?>
             <tr>
@@ -280,6 +282,8 @@ $pagination_link .= "&page=";
                 </td>
                 <td><?php echo htmlspecialchars($member['address']); ?></td>
                 <td><?php echo htmlspecialchars($member['created_at']); ?></td>
+                <!-- それぞれの編集ページに飛ぶリンク、末尾に会員ID -->
+                <td><a href="member_edit.php?id=<?php echo htmlspecialchars($member['id']); ?>">編集</a></td>
             </tr>
             <?php endforeach; ?>
         </table>
