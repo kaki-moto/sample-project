@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   // フォームから送信されたデータ（$POST）全てをセッション変数$SESSION['adminData']に一時保存。
   // セッション変数$SESSIONの'adminData'というキーに格納。
   // adminDataは次ページで使用する為にセッションに保存
-  $_SESSION['adminData'] = $_POST;
+  $_SESSION['formData'] = $_POST;
 
   // バリデーション、エラーがあるかチェック
   // empty()は変数が空であるかどうかを確認するための関数。変数が未定義の場合には警告が出る。
@@ -82,17 +82,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $errors['pass_con'] = '※パスワードが一致しません。';
   }
 
-  if (empty($_POST['login_id'])) {
-    $errors['login_id'] = '※メールアドレスを入力してください。';
+  if (empty($_POST['email'])) {
+    $errors['email'] = '※メールアドレスを入力してください。';
     } else {
-    // メールアドレス（ログインID）の長さチェック
-    if (mb_strlen($_POST['login_id'], 'UTF-8') > 200) {
-        $errors['login_id'] = '※メールアドレスは200文字以内で入力してください。';
+    // メールアドレスの長さチェック
+    if (mb_strlen($_POST['email'], 'UTF-8') > 200) {
+        $errors['email'] = '※メールアドレスは200文字以内で入力してください。';
     } else {
         // メールアドレスの形式チェック
         $email_pattern = '/^[a-zA-Z0-9.!#$%&\'*+\/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/';
-        if (!preg_match($email_pattern, $_POST['login_id'])) {
-            $errors['login_id'] = '※有効なメールアドレス形式で入力してください。';
+        if (!preg_match($email_pattern, $_POST['email'])) {
+            $errors['email'] = '※有効なメールアドレス形式で入力してください。';
         } else {
             // DBに接続して、メールアドレス（login_idカラム）が重複していないかチェック
             $dsn = 'mysql:host=localhost;dbname=sampledb;charset=utf8mb4';
@@ -103,13 +103,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $pdo = new PDO($dsn, $username, $passwordDb);
                 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-                $stmt = $pdo->prepare("SELECT COUNT(*) FROM administers WHERE login_id = :login_id");
-                $stmt->bindParam(':login_id', $_POST['login_id']);
+                $stmt = $pdo->prepare("SELECT COUNT(*) FROM members WHERE email = :email");
+                $stmt->bindParam(':email', $_POST['email']);
                 $stmt->execute();
-                $loginIdCount = $stmt->fetchColumn();
+                $emailCount = $stmt->fetchColumn();
 
-                if ($loginIdCount > 0) {
-                    $errors['login_id'] = '※既に登録されているメールアドレスです。';
+                if ($emailCount > 0) {
+                    $errors['email'] = '※既に登録されているメールアドレスです。';
                 }
             } catch (PDOException $e) {
                 $errors['database'] = 'データベースエラー: ' . $e->getMessage();
@@ -120,8 +120,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   // エラー（$errors）がなかったら
   if (empty($errors)) {
-    // sent.phpに遷移
-    header('Location: sent.php');
+    // member_confirm.phpに遷移
+    header('Location: member_confirm.php');
     exit();
 // エラー（$errors）があったら
   } else {
@@ -137,12 +137,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // 条件式 ? 真の場合の値 : 偽の場合の値
 // isset()で、$_SESSION['adminData']と$_SESSION['errors']の存在をチェック
 // 存在する場合はその値を代入、存在しない場合は空の配列[]を変数に代入。
-$adminData = $_SESSION['adminData'] ?? [];
+$formData = $_SESSION['formnData'] ?? [];
 $errors = $_SESSION['errors'] ?? [];
 
 // セッションのクリア、エラーを格納していた変数を削除、エラーメッセージをセッションから削除
 unset($_SESSION['errors']);
-unset($_SESSION['adminData']);
+unset($_SESSION['formData']);
 
 ?>
 
@@ -173,12 +173,14 @@ unset($_SESSION['adminData']);
             ID
         </label>
         
+        <br>
+
         <label>
           氏名
           <label>
             姓
             <!-- ENT_QUOTESはhtmlspecialchars関数と一緒に使われる定数。'と"をHTMLエンティティに変換、これにより、HTMLの特殊文字がそのまま表示されるのを防ぐ。 -->
-            <input type="text" name="family" value="<?php echo htmlspecialchars($adminData['family'] ?? '', ENT_QUOTES); ?>">
+            <input type="text" name="family" value="<?php echo htmlspecialchars($formData['family'] ?? '', ENT_QUOTES); ?>">
             <!-- もしfamilyにエラーが存在したら -->
             <?php if (isset($errors['family'])): ?>
               <!-- 赤色の文字で htmlspecialchars($errors['family'], ENT_QUOTES) を出力？-->
@@ -187,7 +189,7 @@ unset($_SESSION['adminData']);
           </label>
           <label>
             名
-            <input type="text" name="first" value="<?php echo htmlspecialchars($adminData['first'] ?? '', ENT_QUOTES); ?>">
+            <input type="text" name="first" value="<?php echo htmlspecialchars($formData['first'] ?? '', ENT_QUOTES); ?>">
             <?php if (isset($errors['first'])): ?>
               <p style="color: red;"><?php echo htmlspecialchars($errors['first'], ENT_QUOTES); ?></p>
             <?php endif; ?>
@@ -198,8 +200,8 @@ unset($_SESSION['adminData']);
 
         <label>
           性別
-          <input type="radio" name="gender" value="男性" <?php if (isset($adminData['gender']) && $adminData['gender'] === '男性') echo 'checked'; ?>>男性
-          <input type="radio" name="gender" value="女性" <?php if (isset($adminData['gender']) && $adminData['gender'] === '女性') echo 'checked'; ?>>女性
+          <input type="radio" name="gender" value="男性" <?php if (isset($formData['gender']) && $formData['gender'] === '男性') echo 'checked'; ?>>男性
+          <input type="radio" name="gender" value="女性" <?php if (isset($formData['gender']) && $formData['gender'] === '女性') echo 'checked'; ?>>女性
           <?php if (isset($errors['gender'])): ?>
             <p style="color: red;"><?php echo $errors['gender']; ?></p>
           <?php endif; ?>
@@ -213,10 +215,10 @@ unset($_SESSION['adminData']);
             都道府県
             <select name="pref">
               <!-- 都道府県の選択結果が保持されるように -->
-              <option value="" <?php echo !isset($adminData['pref']) || $adminData['pref'] === '' ? 'selected' : ''; ?>>選択してください</option>
+              <option value="" <?php echo !isset($formData['pref']) || $formData['pref'] === '' ? 'selected' : ''; ?>>選択してください</option>
                 <?php foreach ($prefectures as $prefecture): ?>
                 <option value="<?php echo htmlspecialchars($prefecture, ENT_QUOTES); ?>"
-                <?php echo isset($adminData['pref']) && $adminData['pref'] === $prefecture ? 'selected' : ''; ?>>
+                <?php echo isset($formData['pref']) && $formData['pref'] === $prefecture ? 'selected' : ''; ?>>
                 <?php echo htmlspecialchars($prefecture, ENT_QUOTES); ?>
               </option>
                 <?php endforeach; ?>
@@ -227,7 +229,7 @@ unset($_SESSION['adminData']);
           </label>
           <label>
             それ以降の住所
-            <input type="text" name="address" value="<?php echo htmlspecialchars($adminData['address'] ?? '', ENT_QUOTES); ?>">
+            <input type="text" name="address" value="<?php echo htmlspecialchars($formData['address'] ?? '', ENT_QUOTES); ?>">
             <?php if (isset($errors['address'])): ?>
               <p style="color: red;"><?php echo $errors['address']; ?></p>
             <?php endif; ?>
@@ -257,10 +259,10 @@ unset($_SESSION['adminData']);
         <br>
 
         <label>
-          メールアドレス（ログインID）
-          <input type="text" name="login_id" value="<?php echo htmlspecialchars($adminData['login_id'] ?? '', ENT_QUOTES); ?>">
-          <?php if (isset($errors['login_id'])): ?>
-            <p style="color: red;"><?php echo $errors['login_id']; ?></p>
+          メールアドレス
+          <input type="text" name="email" value="<?php echo htmlspecialchars($formData['email'] ?? '', ENT_QUOTES); ?>">
+          <?php if (isset($errors['email'])): ?>
+            <p style="color: red;"><?php echo $errors['email']; ?></p>
           <?php endif; ?>
         </label>
         
