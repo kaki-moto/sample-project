@@ -91,7 +91,7 @@ try {
     $total_pages = ceil($total_members / $limit);
 
     // DBのmemberテーブルから会員情報を取得（ソート順を反映、検索条件を考慮）
-    $query = "SELECT id, CONCAT(name_sei, name_mei) as name, gender, CONCAT(pref_name, address) as address, created_at 
+    $query = "SELECT id, CONCAT(name_sei, name_mei) as name, gender, CONCAT(pref_name, address) as address, created_at
     FROM members 
     WHERE deleted_at IS NULL";
     
@@ -193,6 +193,10 @@ $pagination_link .= "&page=";
     </header>
 
     <main>
+
+    <form action="member_regist.php" method="get">
+            <input type="submit" value="会員登録">
+    </form>
 
     <!-- 会員検索 -->
     <div>
