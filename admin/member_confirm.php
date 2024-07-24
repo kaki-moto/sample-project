@@ -4,6 +4,7 @@ date_default_timezone_set('Asia/Tokyo');
 
 $title = "会員登録画面フォーム";
 $labelId = "登録後に自動採番";
+$compButton = "登録完了";
 
 // セッションからフォームデータを取得
 $formData = isset($_SESSION['formData']) ? $_SESSION['formData'] : [];

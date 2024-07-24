@@ -11,7 +11,8 @@ if (!isset($_SESSION['user_id'])) {
 $errors = [];
 
 $title = "会員情報登録フォーム";
-// $labelId = "登録後に自動採番";
+
+$labelId = "登録後に自動採番";
 $nextpage = "member_confirm.php";
 $editpage = "member_regist.php";
 
@@ -32,16 +33,9 @@ $prefectures = [
 // フォームがPOSTメソッドで送信されたらブロック内のコード実行
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-  // フォームから送信されたデータ（$POST）全てをセッション変数$SESSION['adminData']に一時保存。
-  // セッション変数$SESSIONの'adminData'というキーに格納。
-  // adminDataは次ページで使用する為にセッションに保存
-  $_SESSION['formData'] = $_POST;
-
   // バリデーション、エラーがあるかチェック
-  // empty()は変数が空であるかどうかを確認するための関数。変数が未定義の場合には警告が出る。
   if (empty($_POST['family'])) {
     $errors['family'] = '※姓を入力してください。';
-  // strlen()は文字列の長さを取得する関数、マルチバイト文字を正しく数えるためmb_strlen()に変更
   } elseif (mb_strlen($_POST['family']) > 20) {
     $errors['family'] = '※姓は20文字以内で入力してください。';
   }
@@ -54,22 +48,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   if (empty($_POST['gender'])) {
     $errors['gender'] = '※性別を選択してください。';
-  // value値を男性・女性以外にした時エラーに
-  // in_array(検索したい値, 検索対象の配列[array])で送信された値が'男性'または'女性'であるかチェック
   } elseif (!in_array($_POST['gender'], ['男性', '女性'])) {
-    // 男性でも女性でもない場合、エラーに
     $errors['gender'] = '※無効な性別が選択されました。';
   }
 
-  // 都道府県が選択されているか
   if (empty($_POST['pref'])) {
     $errors['pref'] = '※都道府県を選択してください。';
-  // in_array()で選択された都道府県の値が$prefectures配列に含まれているかチェック
   } elseif (!in_array($_POST['pref'], $prefectures)){
-    // 含まれていなければエラーに
     $errors['pref'] = '※無効な都道府県が選択されました。';
   }
-  if (strlen($_POST['address']) >100) {
+  if (mb_strlen($_POST['address']) >100) {
     $errors['address'] = '※住所は100文字以内で入力してください。';
   }
 
@@ -79,38 +67,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $errors['pass'] = '※パスワードは8文字以上で入力してください。';
   } elseif (strlen($_POST['pass']) > 20 ) {
     $errors['pass'] = '※パスワードは20文字以内で入力してください。';
-  // preg_match関数はある文字列から正規表現で指定したパターンにマッチした文字列を検索できる
   } elseif (!preg_match('/^[a-zA-Z0-9]+$/', $_POST['pass'])){
     $errors['pass'] = '※パスワードは半角英数字で入力してください。';
   }
   if (empty($_POST['pass_con'])) {
     $errors['pass_con'] = '※パスワードを入力してください。';
-  } elseif (strlen($_POST['pass_con']) < 8 ) {
-    $errors['pass_con'] = '※パスワードは8文字以上で入力してください。';
-  } elseif (strlen($_POST['pass_con']) > 20 ) {
-    $errors['pass_con'] = '※パスワードは20文字以内で入力してください。';
-  } elseif (!preg_match('/^[a-zA-Z0-9]+$/', $_POST['pass_con'])){
-    $errors['pass_con'] = '※パスワードは半角英数字で入力してください。';
-  }
-
-  if ($_POST['pass'] !== $_POST['pass_con']) {
+  } elseif ($_POST['pass'] !== $_POST['pass_con']) {
     $errors['pass_con'] = '※パスワードが一致しません。';
   }
 
   if (empty($_POST['email'])) {
     $errors['email'] = '※メールアドレスを入力してください。';
-    } else {
-    // メールアドレスの長さチェック
+  } else {
     if (mb_strlen($_POST['email'], 'UTF-8') > 200) {
         $errors['email'] = '※メールアドレスは200文字以内で入力してください。';
     } else {
-        // メールアドレスの形式チェック
         $email_pattern = '/^[a-zA-Z0-9.!#$%&\'*+\/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/';
         if (!preg_match($email_pattern, $_POST['email'])) {
             $errors['email'] = '※有効なメールアドレス形式で入力してください。';
         } else {
-            // DBに接続して、メールアドレス（login_idカラム）が重複していないかチェック
-            // DBに接続できたかできてないかわかるようにするためtry…catch文
             try {
                 $pdo = new PDO($dsn, $username, $passwordDb);
                 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -132,31 +107,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   // エラー（$errors）がなかったら
   if (empty($errors)) {
-      // member_confirm.phpに遷移、シングルクォートではなくダブルクォート
+      $_SESSION['formData'] = $_POST;
       header("Location: member_confirm.php");
       exit();
   // エラー（$errors）があったら
   } else {
-      // $errorsを$_SESSION['errors']に格納
       $_SESSION['errors'] = $errors;
-      // 修正のため再びmember_regist.phpへ
+      $_SESSION['formData'] = $_POST;
       header("Location: member_regist.php");
       exit();
   }
 }
 
-
-// 条件式 ? 真の場合の値 : 偽の場合の値
-// isset()で、$_SESSION['adminData']と$_SESSION['errors']の存在をチェック
-// 存在する場合はその値を代入、存在しない場合は空の配列[]を変数に代入。
+// フォームデータとエラーの取得
 $formData = $_SESSION['formData'] ?? [];
 $errors = $_SESSION['errors'] ?? [];
 
-
-// セッションのクリア、エラーを格納していた変数を削除、エラーメッセージをセッションから削除
+// セッションのクリア
 unset($_SESSION['errors']);
 unset($_SESSION['formData']);
 
-// テンプレの読み込み
+// テンプレートの読み込み
 require_once("template.php");
 ?>

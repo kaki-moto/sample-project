@@ -4,7 +4,6 @@ date_default_timezone_set('Asia/Tokyo');
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
 
 ob_start();
 
@@ -38,22 +37,48 @@ $prefectures = [
     '熊本県', '大分県', '宮崎県', '鹿児島県', '沖縄県'
 ];
 
-// ユーザーデータ取得
+// PDO接続を関数の外で行う
 try {
     $pdo = new PDO($dsn, $username, $passwordDb);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $dbData = getUserData($pdo, $id);
-    if ($dbData) {
-        $formData = array_merge($formData, $dbData);
-        $labelId = htmlspecialchars($dbData['id'] ?? '', ENT_QUOTES);
-    }
 } catch (PDOException $e) {
-    $errors['database'] = 'データベースエラー: ' . $e->getMessage();
+    $errors['database'] = 'データベース接続エラー: ' . $e->getMessage();
+}
+
+// ユーザーデータ取得
+if (empty($formData)) {
+    try {
+        $dbData = getUserData($pdo, $id);
+        if ($dbData) {
+            $formData = [
+                'id' => $dbData['id'],
+                'family' => $dbData['name_sei'],
+                'first' => $dbData['name_mei'],
+                'gender' => ($dbData['gender'] == 1) ? '男性' : '女性',
+                'pref' => $dbData['pref_name'],
+                'address' => $dbData['address'],
+                'email' => $dbData['email']
+            ];
+            $labelId = htmlspecialchars($dbData['id'] ?? '', ENT_QUOTES);
+        }
+    } catch (PDOException $e) {
+        $errors['database'] = 'データベースエラー: ' . $e->getMessage();
+    }
 }
 
 // POST処理
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $formData = $_POST;
+    $formData = [
+        'id' => $id,
+        'family' => $_POST['family'] ?? '',
+        'first' => $_POST['first'] ?? '',
+        'gender' => $_POST['gender'] ?? '',
+        'pref' => $_POST['pref'] ?? '',
+        'address' => $_POST['address'] ?? '',
+        'email' => $_POST['email'] ?? '',
+        'pass' => $_POST['pass'] ?? '',
+        'pass_con' => $_POST['pass_con'] ?? ''
+    ];
     $errors = validateForm($formData, $pdo, $prefectures);
 
     if (empty($errors)) {
@@ -66,6 +91,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header("Location: member_edit.php?id=$id");
         exit();
     }
+}
+
+// エラーがある場合、セッションからフォームデータを取得
+if (!empty($errors)) {
+    $formData = $_SESSION['formData'] ?? $formData;
 }
 
 // テンプレートの読み込み
@@ -112,20 +142,21 @@ function validateForm($data, $pdo, $prefectures) {
         $errors['address'] = '※住所は100文字以内で入力してください。';
     }
 
-    if (empty($data['pass'])) {
-        $errors['pass'] = '※パスワードを入力してください。';
-    } elseif (strlen($data['pass']) < 8) {
-        $errors['pass'] = '※パスワードは8文字以上で入力してください。';
-    } elseif (strlen($data['pass']) > 20) {
-        $errors['pass'] = '※パスワードは20文字以内で入力してください。';
-    } elseif (!preg_match('/^[a-zA-Z0-9]+$/', $data['pass'])) {
-        $errors['pass'] = '※パスワードは半角英数字で入力してください。';
-    }
+    // パスワードのバリデーションを条件付きに変更
+    if (!empty($data['pass'])) {
+        if (strlen($data['pass']) < 8) {
+            $errors['pass'] = '※パスワードは8文字以上で入力してください。';
+        } elseif (strlen($data['pass']) > 20) {
+            $errors['pass'] = '※パスワードは20文字以内で入力してください。';
+        } elseif (!preg_match('/^[a-zA-Z0-9]+$/', $data['pass'])) {
+            $errors['pass'] = '※パスワードは半角英数字で入力してください。';
+        }
 
-    if (empty($data['pass_con'])) {
-        $errors['pass_con'] = '※パスワードを入力してください。';
-    } elseif ($data['pass'] !== $data['pass_con']) {
-        $errors['pass_con'] = '※パスワードが一致しません。';
+        if (empty($data['pass_con'])) {
+            $errors['pass_con'] = '※確認用パスワードを入力してください。';
+        } elseif ($data['pass'] !== $data['pass_con']) {
+            $errors['pass_con'] = '※パスワードが一致しません。';
+        }
     }
 
     if (empty($data['email'])) {
@@ -138,21 +169,29 @@ function validateForm($data, $pdo, $prefectures) {
             $errors['email'] = '※有効なメールアドレス形式で入力してください。';
         } else {
             try {
-                $stmt = $pdo->prepare("SELECT COUNT(*) FROM members WHERE email = :email");
-                $stmt->bindParam(':email', $data['email']);
+                // 現在のユーザーのメールアドレスを取得
+                $stmt = $pdo->prepare("SELECT email FROM members WHERE id = :id");
+                $stmt->bindParam(':id', $data['id']);
                 $stmt->execute();
-                $emailCount = $stmt->fetchColumn();
+                $currentEmail = $stmt->fetchColumn();
 
-                if ($emailCount > 0) {
-                    $errors['email'] = '※既に登録されているメールアドレスです。';
+                // メールアドレスが変更されている場合のみ重複チェックを行う
+                if ($data['email'] !== $currentEmail) {
+                    $stmt = $pdo->prepare("SELECT COUNT(*) FROM members WHERE email = :email AND id != :id");
+                    $stmt->bindParam(':email', $data['email']);
+                    $stmt->bindParam(':id', $data['id']);
+                    $stmt->execute();
+                    $emailCount = $stmt->fetchColumn();
+
+                    if ($emailCount > 0) {
+                        $errors['email'] = '※既に登録されているメールアドレスです。';
+                    }
                 }
             } catch (PDOException $e) {
                 $errors['database'] = 'データベースエラー: ' . $e->getMessage();
             }
         }
     }
-
     return $errors;
 }
 ?>
-
