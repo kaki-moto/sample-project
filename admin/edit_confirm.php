@@ -14,6 +14,13 @@ if(empty($formData)){
   exit;
 }
 
+// 管理者用member.phpはログインしてる管理者だけが見れるように
+// ログインしているか確認
+if (!isset($_SESSION['user_id'])) {
+  header('Location: login.php');
+  exit();
+}
+
 $title = "会員情報編集確認画面";
 $compButton = "編集完了";
 $confirmPage = "edit_confirm.php";

@@ -2,6 +2,13 @@
 session_start();
 date_default_timezone_set('Asia/Tokyo');
 
+// 管理者用member.phpはログインしてる管理者だけが見れるように
+// ログインしているか確認
+if (!isset($_SESSION['user_id'])) {
+  header('Location: login.php');
+  exit();
+}
+
 $title = "会員登録確認画面";
 $labelId = "登録後に自動採番";
 $compButton = "登録完了";
