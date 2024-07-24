@@ -61,7 +61,8 @@
       </div>
     
       <!--二重送信を防ぐためonsubmit="disableButton()とid="submitButton"を-->
-      <form action="edit_confirm.php" method="post" onsubmit="disableButton()">
+      <!--$confirmPageは登録ならedit_confirm.php、編集ならmember_confirm.phpに遷移-->
+      <form action="<?php echo $confirmPage; ?>" method="post" onsubmit="disableButton()">
         <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
         <!--$compButtonは登録なら登録完了、編集なら編集完了ボタンに-->
         <input type="submit" id="submitButton" value="<?php echo $compButton; ?>">

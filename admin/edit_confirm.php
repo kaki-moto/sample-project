@@ -16,6 +16,7 @@ if(empty($formData)){
 
 $title = "会員情報編集確認画面";
 $compButton = "編集完了";
+$confirmPage = "edit_confirm.php";
 
 // 二重送信防ぐためCSRFトークンの作成
 if (empty($_SESSION['csrf_token'])) {
