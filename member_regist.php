@@ -125,13 +125,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Location: sent.php');
     exit();
 // エラー（$errors）があったら
-  } else {
+    } else {
       // $errorsを$_SESSION['errors']に格納
       $_SESSION['errors'] = $errors;
       // 修正のため再びmember_regist.phpへ
       header('Location: member_regist.php');
       exit();
-  }
+    }
 
 }
 

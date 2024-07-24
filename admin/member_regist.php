@@ -1,17 +1,32 @@
 <?php 
 session_start();
+
+// ログインしてる管理者だけが見れるようにログインチェック
+if (!isset($_SESSION['user_id'])) {
+  header('Location: login.php');
+  exit();
+}
+
 // 初期化
 $errors = [];
 
-// 有効な都道府県のリスト
+$title = "会員情報登録フォーム";
+// $labelId = "登録後に自動採番";
+$nextpage = "member_confirm.php";
+$editpage = "member_regist.php";
+
+$dsn = 'mysql:host=localhost;dbname=sampledb;charset=utf8mb4';
+$username = 'root';
+$passwordDb = 'K4aCuFEh';
+
 $prefectures = [
-    '北海道', '青森県', '岩手県', '宮城県', '秋田県', '山形県', '福島県',
-    '茨城県', '栃木県', '群馬県', '埼玉県', '千葉県', '東京都', '神奈川県',
-    '新潟県', '富山県', '石川県', '福井県', '山梨県', '長野県', '岐阜県',
-    '静岡県', '愛知県', '三重県', '滋賀県', '京都府', '大阪府', '兵庫県',
-    '奈良県', '和歌山県', '鳥取県', '島根県', '岡山県', '広島県', '山口県',
-    '徳島県', '香川県', '愛媛県', '高知県', '福岡県', '佐賀県', '長崎県',
-    '熊本県', '大分県', '宮崎県', '鹿児島県', '沖縄県'
+  '北海道', '青森県', '岩手県', '宮城県', '秋田県', '山形県', '福島県',
+  '茨城県', '栃木県', '群馬県', '埼玉県', '千葉県', '東京都', '神奈川県',
+  '新潟県', '富山県', '石川県', '福井県', '山梨県', '長野県', '岐阜県',
+  '静岡県', '愛知県', '三重県', '滋賀県', '京都府', '大阪府', '兵庫県',
+  '奈良県', '和歌山県', '鳥取県', '島根県', '岡山県', '広島県', '山口県',
+  '徳島県', '香川県', '愛媛県', '高知県', '福岡県', '佐賀県', '長崎県',
+  '熊本県', '大分県', '宮崎県', '鹿児島県', '沖縄県'
 ];
 
 // フォームがPOSTメソッドで送信されたらブロック内のコード実行
@@ -95,9 +110,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errors['email'] = '※有効なメールアドレス形式で入力してください。';
         } else {
             // DBに接続して、メールアドレス（login_idカラム）が重複していないかチェック
-            $dsn = 'mysql:host=localhost;dbname=sampledb;charset=utf8mb4';
-            $username = 'root';
-            $passwordDb = 'K4aCuFEh';
             // DBに接続できたかできてないかわかるようにするためtry…catch文
             try {
                 $pdo = new PDO($dsn, $username, $passwordDb);
@@ -120,161 +132,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   // エラー（$errors）がなかったら
   if (empty($errors)) {
-    // member_confirm.phpに遷移
-    header('Location: member_confirm.php');
-    exit();
-// エラー（$errors）があったら
+      // member_confirm.phpに遷移、シングルクォートではなくダブルクォート
+      header("Location: member_confirm.php");
+      exit();
+  // エラー（$errors）があったら
   } else {
       // $errorsを$_SESSION['errors']に格納
       $_SESSION['errors'] = $errors;
       // 修正のため再びmember_regist.phpへ
-      header('Location: member_regist.php');
+      header("Location: member_regist.php");
       exit();
   }
-
 }
+
 
 // 条件式 ? 真の場合の値 : 偽の場合の値
 // isset()で、$_SESSION['adminData']と$_SESSION['errors']の存在をチェック
 // 存在する場合はその値を代入、存在しない場合は空の配列[]を変数に代入。
-$formData = $_SESSION['formnData'] ?? [];
+$formData = $_SESSION['formData'] ?? [];
 $errors = $_SESSION['errors'] ?? [];
+
 
 // セッションのクリア、エラーを格納していた変数を削除、エラーメッセージをセッションから削除
 unset($_SESSION['errors']);
 unset($_SESSION['formData']);
 
+// テンプレの読み込み
+require_once("template.php");
 ?>
-
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <title>会員登録フォーム</title>
-    <link rel="stylesheet" type="text/css" href="stylesheet.css">
-    <script type="text/javascript">
-        window.onload = function() {
-            // リロードされた時パスワードを表示しないようにする
-            document.getElementById('pass').value = '';
-            document.getElementById('pass_con').value = '';
-        };
-    </script>
-  </head>
-
-  <body>
-    <header>
-        <h3>会員情報登録フォーム</h3>
-    </header>
-
-    <!-- "member_regist.php"でバリデーション -->
-    <form id="form" action="member_regist.php" method="post">
-
-        <label>
-            ID 登録後に自動採番
-        </label>
-        
-        <br>
-
-        <label>
-          氏名
-          <label>
-            姓
-            <!-- ENT_QUOTESはhtmlspecialchars関数と一緒に使われる定数。'と"をHTMLエンティティに変換、これにより、HTMLの特殊文字がそのまま表示されるのを防ぐ。 -->
-            <input type="text" name="family" value="<?php echo htmlspecialchars($formData['family'] ?? '', ENT_QUOTES); ?>">
-            <!-- もしfamilyにエラーが存在したら -->
-            <?php if (isset($errors['family'])): ?>
-              <!-- 赤色の文字で htmlspecialchars($errors['family'], ENT_QUOTES) を出力？-->
-              <p style="color: red;"><?php echo htmlspecialchars($errors['family'], ENT_QUOTES); ?></p>
-            <?php endif; ?>
-          </label>
-          <label>
-            名
-            <input type="text" name="first" value="<?php echo htmlspecialchars($formData['first'] ?? '', ENT_QUOTES); ?>">
-            <?php if (isset($errors['first'])): ?>
-              <p style="color: red;"><?php echo htmlspecialchars($errors['first'], ENT_QUOTES); ?></p>
-            <?php endif; ?>
-          </label>
-        </label>
-
-        <br>
-
-        <label>
-          性別
-          <input type="radio" name="gender" value="男性" <?php if (isset($formData['gender']) && $formData['gender'] === '男性') echo 'checked'; ?>>男性
-          <input type="radio" name="gender" value="女性" <?php if (isset($formData['gender']) && $formData['gender'] === '女性') echo 'checked'; ?>>女性
-          <?php if (isset($errors['gender'])): ?>
-            <p style="color: red;"><?php echo $errors['gender']; ?></p>
-          <?php endif; ?>
-        </label>
-
-        <br>
-
-        <label>
-          住所
-          <label>
-            都道府県
-            <select name="pref">
-              <!-- 都道府県の選択結果が保持されるように -->
-              <option value="" <?php echo !isset($formData['pref']) || $formData['pref'] === '' ? 'selected' : ''; ?>>選択してください</option>
-                <?php foreach ($prefectures as $prefecture): ?>
-                <option value="<?php echo htmlspecialchars($prefecture, ENT_QUOTES); ?>"
-                <?php echo isset($formData['pref']) && $formData['pref'] === $prefecture ? 'selected' : ''; ?>>
-                <?php echo htmlspecialchars($prefecture, ENT_QUOTES); ?>
-              </option>
-                <?php endforeach; ?>
-            </select>
-            <?php if (isset($errors['pref'])): ?>
-              <p style="color: red;"><?php echo $errors['pref']; ?></p>
-            <?php endif; ?>
-          </label>
-          <label>
-            それ以降の住所
-            <input type="text" name="address" value="<?php echo htmlspecialchars($formData['address'] ?? '', ENT_QUOTES); ?>">
-            <?php if (isset($errors['address'])): ?>
-              <p style="color: red;"><?php echo $errors['address']; ?></p>
-            <?php endif; ?>
-          </label>
-        </label>
-
-        <br>
-
-        <label>
-          パスワード
-          <input type="password" name="pass">
-          <?php if (isset($errors['pass'])): ?>
-            <p style="color: red;"><?php echo $errors['pass']; ?></p>
-          <?php endif; ?>
-        </label>
-
-        <br>
-
-        <label>
-          パスワードの確認
-          <input type="password" name="pass_con">
-          <?php if (isset($errors['pass_con'])): ?>
-            <p style="color: red;"><?php echo $errors['pass_con']; ?></p>
-          <?php endif; ?>
-        </label>
-
-        <br>
-
-        <label>
-          メールアドレス
-          <input type="text" name="email" value="<?php echo htmlspecialchars($formData['email'] ?? '', ENT_QUOTES); ?>">
-          <?php if (isset($errors['email'])): ?>
-            <p style="color: red;"><?php echo $errors['email']; ?></p>
-          <?php endif; ?>
-        </label>
-        
-        <p><input type="submit" value="確認画面へ"></p>
-    </form>
-    <form action="top.php" method="get">
-      <input type="submit" value="トップに戻る">
-    </form>
-    </div>
-
-  </body>
-
-</html>
-
-
