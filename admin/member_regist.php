@@ -10,7 +10,7 @@ if (!isset($_SESSION['user_id'])) {
 // 初期化
 $errors = [];
 
-$title = "会員情報登録フォーム";
+$title = "会員登録";
 
 $labelId = "登録後に自動採番";
 $nextpage = "member_confirm.php";

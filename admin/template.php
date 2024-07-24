@@ -11,11 +11,25 @@
             document.getElementById('pass_con').value = '';
         };
     </script>
+    <style>
+      header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 10px;
+      }
+      h3 {
+          margin: 0;
+      }
+    </style>
   </head>
 
   <body>
     <header>
         <h3><?php echo $title; ?></h3>
+        <form action="member.php" method="get">
+          <input type="submit" value="一覧に戻る">
+        </form>
     </header>
 
     <form id="form" action="<?php echo $editpage; ?>" method="POST">

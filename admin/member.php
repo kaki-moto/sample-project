@@ -2,6 +2,16 @@
 session_start();
 date_default_timezone_set('Asia/Tokyo'); //日本時間
 
+// ソフトデリートできているか
+//if (isset($_SESSION['delete_success'])) {
+    //echo '<p style="color: green;">' . htmlspecialchars($_SESSION['delete_success']) . '</p>';
+    //unset($_SESSION['delete_success']);
+//}
+//if (isset($_SESSION['error_message'])) {
+    //echo '<p style="color: red;">' . htmlspecialchars($_SESSION['error_message']) . '</p>';
+    //unset($_SESSION['error_message']);
+//}
+
 // 管理者用member.phpはログインしてる管理者だけが見れるように
 // ログインしているか確認
 if (!isset($_SESSION['user_id'])) {
@@ -264,11 +274,12 @@ $pagination_link .= "&page=";
                     </a>
                 </th>
                 <th>編集</th>
+                <th>詳細</th>
             </tr>
             <?php foreach ($members as $member): ?>
             <tr>
                 <td><?php echo htmlspecialchars($member['id']); ?></td>
-                <td><?php echo htmlspecialchars($member['name']); ?></td>
+                <td><a href="member_detail.php?id=<?php echo htmlspecialchars($member['id']); ?>"><?php echo htmlspecialchars($member['name']); ?></a></td>
                 <td>
                     <?php 
                     if ($member['gender'] == 1) {
@@ -284,6 +295,7 @@ $pagination_link .= "&page=";
                 <td><?php echo htmlspecialchars($member['created_at']); ?></td>
                 <!-- それぞれの編集ページに飛ぶリンク、末尾に会員ID -->
                 <td><a href="member_edit.php?id=<?php echo htmlspecialchars($member['id']); ?>">編集</a></td>
+                <td><a href="member_detail.php?id=<?php echo htmlspecialchars($member['id']); ?>">詳細</a></td>
             </tr>
             <?php endforeach; ?>
         </table>

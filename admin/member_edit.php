@@ -18,7 +18,7 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-$title = "会員情報編集画面";
+$title = "会員編集";
 $id = htmlspecialchars($_GET['id'] ?? '', ENT_QUOTES);
 $nextpage = "edit_confirm.php";
 $editpage = "member_edit.php?id=$id";
